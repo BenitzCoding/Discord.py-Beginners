@@ -357,6 +357,15 @@ def get_syntax_error(e):
 		return f'```py\n{e.__class__.__name__}: {e}\n```'
 	return f'```py\n{e.text}{"^":>{e.offset}}\n{e.__class__.__name__}: {e}```'
 
+# Source Command
+
+@bot.command(aliases = ["sourcecode", "source-code"])
+async def source(ctx):
+	embed = discord.Embed(title='Discord.py Beginner Source-Code', description="Here is the source Code for Discord.py Beginner's Official Bot.\n https://github.com/BenitzCoding/Discord.py-Begginners", color=0x2F3136)
+	embed.set_image(url='https://media.discordapp.net/attachments/715492844768591945/783944318133600266/source.png?width=961&height=541')
+	embed.set_footer(text='Discord.py For Beginners', icon_url=logo)
+	await ctx.send(embed=embed)
+
 # Reminder
 
 @bot.command(case_insensitive = True, aliases = ["remind", "remindme", "remind_me"])
@@ -854,6 +863,13 @@ async def shutdown(ctx):
 		await bot.logout()
 	else:
 		await ctx.send("<:F:780326063120318465> You don't have access to that command.")
+
+# Read Cogs
+
+for file in os.listdir("./cogs"):
+	if file.endswith(".py"):
+		name = file[:-3]
+		bot.load_extension(f"cogs.{name}")
 
 # Run Bot
 
