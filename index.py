@@ -158,7 +158,6 @@ async def on_message(message):
 		else:
 			user = message.author
 			blocked_invites = ["discord.gg", "discord.com/invite"]
-			blocked_links = [".qp", ".cp", ".gp", ".pq", "http://", "https://", "www.", ".com", ".net", ".tk", ".uk", ".un", ".gov", ".us", ".cf", ".ml", ".bn", ".in", ".tech", ".bot", ".nu", ".gg", ".chat", ".xyz", ".ga", ".gp", ".org", ".eu", ".name", ".me", ".nl", ".tv", ".info", ".biz", ".cc", ".mobi", ".actor", ".academy", ".agency", ".accountant", ".ws", ".garden", ".cafe", ".ceo", ".care", ".art"]
 			blocked_words = ["f**k", "fuk", "fuc", "fuck", "f*ck", "bitch", "b*tch", "n*gga", "ni**a", "nigga", "vegina", "fag", "f*g", "dick", "d*ck", "penis", "porn", "sex", "s*x", "hentai", "henti", "pxrn", "p*rn", "a$$", "cunt", "c*nt", "boob", "tits", "cock", "f u c k", "s h i t", "b i t c h", "h e n t a i", "p o r n", "d!ck", "giri", "dharan", "murugadoss"]
 
 			for x in blocked_invites:
@@ -168,13 +167,6 @@ async def on_message(message):
 						blocked_invite = discord.Embed(title='Blocked Message', description='Your message has been blocked because it contained a Discord Invite, you may delete the blocked word and send the message again.', color=0x2F3136)
 						blocked_invite.set_footer(text='Discord.py For Beginners', icon_url=logo)
 						await user.send(embed=blocked_invite)
-			for x in blocked_links:
-				if x in message.content.lower():
-					if message.channel.id != 780280201162522634:
-						await message.delete()
-						blocked_link = discord.Embed(title='Blocked Message', description='Your message has been blocked because it contained External Links, you may delete the blocked word and send the message again.', color=0x2F3136)
-						blocked_link.set_footer(text='Discord.py For Beginners', icon_url=logo)
-						await user.send(embed=blocked_link)
 			for x in blocked_words:
 				if x in message.content.lower():
 					await message.delete()
