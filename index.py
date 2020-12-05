@@ -68,7 +68,7 @@ async def on_ready():
 async def on_member_join(member):
 	if member.bot:
 		webhook = DiscordWebhook(url='https://discord.com/api/webhooks/780400771975086090/1aG9XbOqyGwRnEdvYie3lvUYAWYyiGkhU_y29TABVHy9_tG5wZd73Fe5TLG1ozG_MlFM')
-		embed = DiscordEmbed(title='<:a:780407857093935124> Bot Added', description=f'**Bot Name:**\n{member.name} \n\n **Bot ID:**\n{member.id} \n\n **Bot Invite:**\nhttps://discord.com/oauth2/authorize?client_id={member.id}&scope=bot&permissions=0', color=0x2F3136)
+		embed = DiscordEmbed(title='<:a:780407857093935124> Bot Added', description=f'**Bot Name:**\n{member.name} \n\n**Bot ID:**\n{member.id} \n\n**Bot Invite:**\nhttps://discord.com/oauth2/authorize?client_id={member.id}&scope=bot&permissions=0', color=0x2F3136)
 		embed.set_footer(text='Discord.py For Beginners', icon_url=logo)
 		webhook.add_embed(embed)
 		webhook.execute()
@@ -335,13 +335,13 @@ async def modrep(ctx, user: discord.Member, *, message: str):
 @bot.command()
 async def addbot(ctx, curl, *, reason):
 	webhook = DiscordWebhook(url='https://discord.com/api/webhooks/780396357118328842/fFoSTVjLGG-op1xxyYOW14JNGdjnPNxZ057Wmf6GKICw4ecDeCiHa3ofM_4RSVHrVhRI')
-	embed = DiscordEmbed(title='New Bot Request', description=f'**Reason:**\n{reason}\n\n:link: [Bot Invite](https://discord.com/oauth2/authorize?client_id={curl}&scope=bot&permissions=0)', color=0x2F3136)
+	embed = DiscordEmbed(title='New Bot Request', description=f'**User:**\n<@!{ctx.author.id}>\n\n**Reason:**\n{reason}\n\n:link: [Bot Invite](https://discord.com/oauth2/authorize?client_id={curl}&scope=bot&permissions=0)', color=0x2F3136)
 	embed.set_footer(text='Discord.py For Beginners', icon_url=logo)
 	webhook.add_embed(embed)
 	webhook.execute()
 
 	webhook2 = DiscordWebhook(url='https://discord.com/api/webhooks/780400771975086090/1aG9XbOqyGwRnEdvYie3lvUYAWYyiGkhU_y29TABVHy9_tG5wZd73Fe5TLG1ozG_MlFM')
-	embed2 = DiscordEmbed(title='New Bot Request', description=f'Bot Requested by <@!{ctx.author.id}> \n\n **Reason to add bot:** \n {reason}', color=0x2F3136)
+	embed2 = DiscordEmbed(title='New Bot Request', description=f'Bot Requested by <@!{ctx.author.id}> \n\n**Reason to add bot:** \n{reason}', color=0x2F3136)
 	embed2.set_footer(text='Discord.py For Beginners', icon_url=logo)
 	webhook2.add_embed(embed2)
 	webhook2.execute()
@@ -358,14 +358,14 @@ async def addbot(ctx, curl, *, reason):
 async def approve(ctx, user: discord.Member, *, reason: commands.clean_content):
 	if reason is None:
 		webhook = DiscordWebhook(url='https://discord.com/api/webhooks/780400771975086090/1aG9XbOqyGwRnEdvYie3lvUYAWYyiGkhU_y29TABVHy9_tG5wZd73Fe5TLG1ozG_MlFM')
-		embed = DiscordEmbed(title='<:D:780326506366500864> Bot Request Approved', description=f'**Approved By:** {ctx.author.mention}({ctx.author.name}#{ctx.author.discriminator}) \n\n **Bot Owner:** {user.mention}({user.name}#{user.discriminator}) \n\n **Reason:**\n**NOT SPECIFIED**', color=0x2F3136)
+		embed = DiscordEmbed(title='<:D:780326506366500864> Bot Request Approved', description=f'**Approved By:** {ctx.author.mention}({ctx.author.name}#{ctx.author.discriminator}) \n\n**Bot Owner:** {user.mention}({user.name}#{user.discriminator}) \n\n**Reason:**\n**NOT SPECIFIED**', color=0x2F3136)
 		embed.set_footer(text='Discord.py For Beginners', icon_url=logo)
 		webhook.add_embed(embed)
 		webhook.execute()
 		await ctx.send('<:D:780326506366500864> Bot Approved')
 	else:
 		webhook = DiscordWebhook(url='https://discord.com/api/webhooks/780400771975086090/1aG9XbOqyGwRnEdvYie3lvUYAWYyiGkhU_y29TABVHy9_tG5wZd73Fe5TLG1ozG_MlFM')
-		embed = DiscordEmbed(title='<:D:780326506366500864> Bot Request Approved', description=f'**Approved By:** {ctx.author.mention}({ctx.author.name}#{ctx.author.discriminator}) \n\n **Bot Owner:** {user.mention}({user.name}#{user.discriminator}) \n\n **Reason:**\n{reason}', color=0x2F3136)
+		embed = DiscordEmbed(title='<:D:780326506366500864> Bot Request Approved', description=f'**Approved By:** {ctx.author.mention}({ctx.author.name}#{ctx.author.discriminator}) \n\n**Bot Owner:** {user.mention}({user.name}#{user.discriminator}) \n\n**Reason:**\n{reason}', color=0x2F3136)
 		embed.set_footer(text='Discord.py For Beginners', icon_url=logo)
 		webhook.add_embed(embed)
 		webhook.execute()
@@ -378,14 +378,14 @@ async def approve(ctx, user: discord.Member, *, reason: commands.clean_content):
 async def disapprove(ctx, user: discord.Member, *, reason: commands.clean_content):
 	if reason is None:
 		webhook = DiscordWebhook(url='https://discord.com/api/webhooks/780400771975086090/1aG9XbOqyGwRnEdvYie3lvUYAWYyiGkhU_y29TABVHy9_tG5wZd73Fe5TLG1ozG_MlFM')
-		embed = DiscordEmbed(title='<:F:780326063120318465> Bot Request Disapproved', description=f'**Disapproved By:** {ctx.author.mention}({ctx.author.name}#{ctx.author.discriminator}) \n\n **Bot Owner:** {user.mention}({user.name}#{user.discriminator}) \n\n **Reason:**\n**NOT SPECIFIED**', color=0x2F3136)
+		embed = DiscordEmbed(title='<:F:780326063120318465> Bot Request Disapproved', description=f'**Disapproved By:** {ctx.author.mention}({ctx.author.name}#{ctx.author.discriminator}) \n\n**Bot Owner:** {user.mention}({user.name}#{user.discriminator}) \n\n**Reason:**\n**NOT SPECIFIED**', color=0x2F3136)
 		embed.set_footer(text='Discord.py For Beginners', icon_url=logo)
 		webhook.add_embed(embed)
 		webhook.execute()
 		await ctx.send('<:F:780326063120318465> Bot Disapproved!')
 	else:
 		webhook = DiscordWebhook(url='https://discord.com/api/webhooks/780400771975086090/1aG9XbOqyGwRnEdvYie3lvUYAWYyiGkhU_y29TABVHy9_tG5wZd73Fe5TLG1ozG_MlFM')
-		embed = DiscordEmbed(title='<:F:780326063120318465> Bot Request Disapproved', description=f'**Disapproved By:** {ctx.author.mention}({ctx.author.name}#{ctx.author.discriminator}) \n\n **Bot Owner:** {user.mention}({user.name}#{user.discriminator}) \n\n **Reason:**\n{reason}', color=0x2F3136)
+		embed = DiscordEmbed(title='<:F:780326063120318465> Bot Request Disapproved', description=f'**Disapproved By:** {ctx.author.mention}({ctx.author.name}#{ctx.author.discriminator}) \n\n**Bot Owner:** {user.mention}({user.name}#{user.discriminator}) \n\n**Reason:**\n{reason}', color=0x2F3136)
 		embed.set_footer(text='Discord.py For Beginners', icon_url=logo)
 		webhook.add_embed(embed)
 		webhook.execute()
