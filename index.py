@@ -209,146 +209,6 @@ async def modclose(ctx, user: discord.Member):
 		await ctx.message.delete()
 		await ctx.send('<:F:780326063120318465> You are not a Administrator, and this is not a ModMail Channel.', delete_after=5)
 
-# Public Eval
-
-@bot.command(name='e')
-async def _eval(ctx, *, body=None):
-	"""Evaluates python code"""
-	blocked_words = ['enumerate', '.leave()', '.give', 'While True', 'while True:', '.get_role(', 'ctx.guild.roles', '.unban', '.ban', '.delete()', 'os', 'multiprocessing', 'history()', '("token")', "('token')", 'token', 'TOKEN', 'sys.exit', '.logout()', '.remove_roles', '.add_roles', '.create_text_channel', 'delete_text_channel', '.pin()', '.edit', 'bot.change_presence', 
-					 'aW1wb3J0IG9zCnJldHVybiBvcy5lbnZpcm9uLmdldCgndG9rZW4nKQ==', 'aW1wb3J0IG9zCnByaW50KG9zLmVudmlyb24uZ2V0KCd0b2tlbicpKQ==']
-	
-	errorwait = ['await']
-
-	blacklist = [682981714523586606, 752027793084252260]
-
-	cblock = ['"`"', "'`'", "'``'", '"``"', "'```'", '"```"', "'``````'", '"``````"']
-
-	requestblock = ["import requests", '"requests"', "'rquests'"]
-	
-	spamblock = ["= True", "while True"]
-
-	if ctx.author.id in blacklist:
-		await ctx.send("<:F:780326063120318465> It looks like You've blacklisted from using Eval.")
-		return
-
-	if body is None:
-		await ctx.send("<:F:780326063120318465> You need to input code that you want to be executed. Do `!help e` for more help.")
-
-	if ctx.author.id != bot.owner_id:
-		for x in errorwait:
-			if x in body:
-				return await ctx.send(f"""```pyTraceback (most recent call last):\n		File "<string>", \nSyntaxError: 'await' outside function```""")
-
-	if ctx.author.id != bot.owner_id:
-		for x in spamblock:
-			if x in body:
-				return await ctx.send(f"""<:F:780326063120318465> It looks like you tried to spam using the bot, The code was blocked""")
-
-	if ctx.author.id != bot.owner_id:
-		for x in requestblock:
-			if x in body:
-				return await ctx.send(f"""```pyTraceback (most recent call last):\n		File "<string>", in <module>\nModuleNotFoundError: No module named 'requests'\n```""")
-
-	if ctx.author.id != bot.owner_id:
-		for x in cblock:
-			if x in body:
-				return await ctx.send(f"<:F:780326063120318465> It looks like you tried to escape the code block, therefore the code won't be executed.")
-
-	if ctx.author.id != bot.owner_id:
-		for x in blocked_words:
-			if x in body:
-				return await ctx.send('<:F:780326063120318465> Your code contains certain blocked forbidden words, It might be used for bad intentions.')
-	env = {
-		'ctx': ctx,
-		'channel': ctx.channel,
-		'author': ctx.author,
-		'guild': ctx.guild,
-		'message': ctx.message,
-		'source': inspect.getsource,
-		'session':bot.session
-	}
-
-	env.update(globals())
-
-	body = cleanup_code(body)
-	stdout = io.StringIO()
-	err = out = None
-
-	to_compile = f'async def func():\n{textwrap.indent(body, "  ")}'
-
-	def paginate(text: str):
-		'''Simple generator that paginates text.'''
-		last = 0
-		pages = []
-		for curr in range(0, len(text)):
-			if curr % 1980 == 0:
-				pages.append(text[last:curr])
-				last = curr
-				appd_index = curr
-		if appd_index != len(text)-1:
-			pages.append(text[last:curr])
-		return list(filter(lambda a: a != '', pages))
-
-	try:
-		exec(to_compile, env)
-	except Exception as e:
-		err = await ctx.send(f'```py\n{e.__class__.__name__}: {e}\n```')
-		return await ctx.message.add_reaction('\u2049')
-
-	func = env['func']
-	try:
-		with redirect_stdout(stdout):
-			ret = await func()
-	except Exception as e:
-		value = stdout.getvalue()
-		err = await ctx.send(f'```py\n{value}{traceback.format_exc()}\n```')
-	else:
-		value = stdout.getvalue()
-		if ret is None:
-			if value:
-				try:
-
-					out = await ctx.send(f'```py\n{value}\n```')
-				except:
-					paginated_text = paginate(value)
-					for page in paginated_text:
-						if page == paginated_text[-1]:
-							out = await ctx.send(f'```py\n{page}\n```')
-							break
-						await ctx.send(f'```py\n{page}\n```')
-		else:
-			bot._last_result = ret
-			try:
-				out = await ctx.send(f'```py\n{value}{ret}\n```')
-			except:
-				paginated_text = paginate(f"{value}{ret}")
-				for page in paginated_text:
-					if page == paginated_text[-1]:
-						out = await ctx.send(f'```py\n{page}\n```')
-						break
-					await ctx.send(f'```py\n{page}\n```')
-
-	if out:
-		await ctx.message.add_reaction('\u2705')  # tick
-	elif err:
-		await ctx.message.add_reaction('\u2049')  # x
-	else:
-		await ctx.message.add_reaction('\u2705')
-
-def cleanup_code(content):
-	"""Automatically removes code blocks from the code."""
-	# remove ```py\n```
-	if content.startswith('```') and content.endswith('```'):
-		return '\n'.join(content.split('\n')[1:-1])
-
-	# remove `foo`
-	return content.strip('` \n')
-
-def get_syntax_error(e):
-	if e.text is None:
-		return f'```py\n{e.__class__.__name__}: {e}\n```'
-	return f'```py\n{e.text}{"^":>{e.offset}}\n{e.__class__.__name__}: {e}```'
-
 # Source Command
 
 @bot.command(aliases = ["sourcecode", "source-code"])
@@ -538,7 +398,7 @@ async def help(ctx):
 	if ctx.invoked_subcommand is None:
 		embed = discord.Embed(timestamp=ctx.message.created_at, title='Discord Python Official Bot', description='You can do `!help <command>` to get more info about the command.', color=0x2F3136)
 		embed.add_field(name='<:D:780326506366500864> Staff Commands', value='```approve, disapprove, modrep, modclose, check, shutdown```')
-		embed.add_field(name='<:C:780327572847853628> User Commands', value='```addbot, e, ping, avatar, about, report, ticket, close```')
+		embed.add_field(name='<:C:780327572847853628> User Commands', value='```addbot, eval, ping, avatar, about, report, ticket, close```')
 		embed.set_footer(text='Discord.py For Beginners', icon_url=logo)
 		await ctx.send(embed=embed)
 
@@ -580,13 +440,13 @@ async def help_report(ctx):
 
 # Eval Help
 
-@help.command(name='e')
-async def help_e(ctx):
+@help.command(name='eval')
+async def help_eval(ctx):
 	embed = discord.Embed(timestamp=ctx.message.created_at, color=0x2F3136)
 	embed.set_author(name='Eval Command')
-	embed.add_field(name='Command Description:', value='This command gets the given code and executes and gives the results of the given code, this is a way of testing your code. If this command is used with any bad intention, You will be punished.', inline=False)
+	embed.add_field(name='Command Description:', value='This command gets the given code and executes and gives the results of the given code, this is a way of testing your code.', inline=False)
 	embed.add_field(name='Command Permissions:', value='`@everyone`', inline=False)
-	embed.add_field(name='Usage:', value="```py\n!e \nprint('test')```", inline=False)
+	embed.add_field(name='Usage:', value="```py\n-eval \nprint('test')```", inline=False)
 	embed.set_footer(text='Discord.py For Beginners', icon_url=logo)
 	await ctx.send(embed=embed)
 
