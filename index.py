@@ -334,22 +334,29 @@ async def modrep(ctx, user: discord.Member, *, message: str):
 
 @bot.command()
 async def addbot(ctx, curl, *, reason):
-	webhook = DiscordWebhook(url='https://discord.com/api/webhooks/780396357118328842/fFoSTVjLGG-op1xxyYOW14JNGdjnPNxZ057Wmf6GKICw4ecDeCiHa3ofM_4RSVHrVhRI')
-	embed = DiscordEmbed(title='New Bot Request', description=f'**User:**\n<@!{ctx.author.id}>\n\n**Reason:**\n{reason}\n\n:link: [Bot Invite](https://discord.com/oauth2/authorize?client_id={curl}&scope=bot&permissions=0)', color=0x2F3136)
-	embed.set_footer(text='Discord.py For Beginners', icon_url=logo)
-	webhook.add_embed(embed)
-	webhook.execute()
+	if reason is None:
+		reply = discord.Embed(title='Bot was not Requested', description='Your Bot was not requested, please specify a reason for your bot to be added.', color=0x2F3136)
+		reply.set_footer(text='Discord.py For Beginners', icon_url=logo)
+		await ctx.message.delete()
+		await ctx.send(embed=reply, delete_after=5)
 
-	webhook2 = DiscordWebhook(url='https://discord.com/api/webhooks/780400771975086090/1aG9XbOqyGwRnEdvYie3lvUYAWYyiGkhU_y29TABVHy9_tG5wZd73Fe5TLG1ozG_MlFM')
-	embed2 = DiscordEmbed(title='New Bot Request', description=f'Bot Requested by <@!{ctx.author.id}> \n\n**Reason to add bot:** \n{reason}', color=0x2F3136)
-	embed2.set_footer(text='Discord.py For Beginners', icon_url=logo)
-	webhook2.add_embed(embed2)
-	webhook2.execute()
+	else:
+		webhook = DiscordWebhook(url='webhook url')
+		embed = DiscordEmbed(title='New Bot Request', description=f'Bot Requested by <@!{ctx.author.id}> \n\n**Reason:**\n{reason}\n\n:link: [Bot Invite](https://discord.com/oauth2/authorize?client_id={curl}&scope=bot&permissions=0)', color=0x2F3136)
+		embed.set_footer(text='Discord.py For Beginners', icon_url=logo)
+		webhook.add_embed(embed)
+		webhook.execute()
 
-	reply = discord.Embed(title='Bot has been Requested', description='Your Bot has need requested, if this was a troll, or a prank, you will be punished.', color=0x2F3136)
-	reply.set_footer(text='Discord.py For Beginners', icon_url=logo)
-	await ctx.message.delete()
-	await ctx.send(embed=reply, delete_after=5)
+		webhook2 = DiscordWebhook(url='webhook url')
+		embed2 = DiscordEmbed(title='New Bot Request', description=f'Bot Requested by <@!{ctx.author.id}> \n\n**Reason to add bot:** \n{reason}', color=0x2F3136)
+		embed2.set_footer(text='Discord.py For Beginners', icon_url=logo)
+		webhook2.add_embed(embed2)
+		webhook2.execute()
+
+		reply = discord.Embed(title='Bot has been Requested', description='Your Bot has been requested, if this was a troll, or a prank, you will be punished.', color=0x2F3136)
+		reply.set_footer(text='Discord.py For Beginners', icon_url=logo)
+		await ctx.message.delete()
+		await ctx.send(embed=reply, delete_after=5)
 
 #Bot Approve Command
 
