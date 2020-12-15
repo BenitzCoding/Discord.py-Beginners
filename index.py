@@ -62,10 +62,10 @@ async def on_ready():
 		count +=1
 
 	activeServers = bot.guilds
-    sum = 0
-    for s in activeServers:
-        sum += len(s.members)
-    people = format(sum, ",")
+	sum = 0
+	for s in activeServers:
+		sum += len(s.members)
+	people = format(sum, ",")
 
 	print('')
 	print('Coded by Benitz Original#1317')
