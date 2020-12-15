@@ -15,6 +15,7 @@ import contextlib
 
 from random import choice
 from datetime import date
+from utils import functions
 from discord.utils import get
 from contextlib import redirect_stdout
 from discord.ext import commands, tasks
@@ -24,13 +25,16 @@ from discord.ext.commands import has_permissions, MissingPermissions, errors
 intents = discord.Intents.default()
 intents.members = True
 
-bot = commands.Bot(command_prefix = '!', intents=intents)
+bot = commands.AutoShardedBot(command_prefix=["!", "<@!780320679886454784>", "<@!780320679886454784> "], intents=intents)
 
 bot.remove_command('help')
 
 TOKEN = ''
 logo = 'https://cdn.discordapp.com/avatars/780320679886454784/8e052d72bce558b6ee31cecac3d80dca.png?size=1024'
 
+config = functions.fetch("utils/cfg.json")
+functions.boot()
+bot.cache = {}
 
 # Status
 
@@ -56,6 +60,12 @@ async def on_ready():
 	for guild in bot.guilds:
 		print("Connected to {}".format(guild))
 		count +=1
+
+	activeServers = bot.guilds
+    sum = 0
+    for s in activeServers:
+        sum += len(s.members)
+    people = format(sum, ",")
 
 	print('')
 	print('Coded by Benitz Original#1317')
@@ -155,25 +165,6 @@ async def on_message(message):
 				await channel.send(embed=embed2)
 				emoji2 = '<a:Y:780327135381422140>'
 				await message.add_reaction(emoji2)
-		else:
-			user = message.author
-			blocked_invites = ["discord.gg", "discord.com/invite"]
-			blocked_words = ["f**k", "fuk", "fuc", "fuck", "f*ck", "bitch", "b*tch", "n*gga", "ni**a", "nigga", "vegina", "fag", "f*g", "dick", "d*ck", "penis", "porn", "sex", "s*x", "hentai", "henti", "pxrn", "p*rn", "a$$", "cunt", "c*nt", "boob", "tits", "cock", "f u c k", "s h i t", "b i t c h", "h e n t a i", "p o r n", "d!ck", "giri", "dharan", "murugadoss"]
-
-			for x in blocked_invites:
-				if x in message.content.lower():
-					if message.channel.id != 780280201162522634:
-						await message.delete()
-						blocked_invite = discord.Embed(title='Blocked Message', description='Your message has been blocked because it contained a Discord Invite, you may delete the blocked word and send the message again.', color=0x2F3136)
-						blocked_invite.set_footer(text='Discord.py For Beginners', icon_url=logo)
-						await user.send(embed=blocked_invite)
-			for x in blocked_words:
-				if x in message.content.lower():
-					await message.delete()
-					blocked_word = discord.Embed(title='Blocked Message', description='Your message has been blocked because it contained a Blocked Words, you may delete the blocked word and send the message again.', color=0x2F3136)
-					blocked_word.set_footer(text='Discord.py For Beginners', icon_url=logo)
-					await user.send(embed=blocked_word)				
-			await bot.process_commands(message)
 
 # Deletion Log
 

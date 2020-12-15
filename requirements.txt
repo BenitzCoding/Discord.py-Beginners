@@ -23,3 +23,7 @@ brawlstars
 aioconsole
 cachetools
 numpy
+better-profanity
+mysql-connector-python
+flask
+flask-discord
