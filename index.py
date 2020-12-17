@@ -60,13 +60,6 @@ async def on_ready():
 	for guild in bot.guilds:
 		print("Connected to {}".format(guild))
 		count +=1
-
-	activeServers = bot.guilds
-	sum = 0
-	for s in activeServers:
-		sum += len(s.members)
-	people = format(sum, ",")
-
 	print('')
 	print('Coded by Benitz Original#1317')
 	print('')
@@ -165,6 +158,48 @@ async def on_message(message):
 				await channel.send(embed=embed2)
 				emoji2 = '<a:Y:780327135381422140>'
 				await message.add_reaction(emoji2)
+		else:
+			user = message.author
+			pings = ["@everyone", "@here"]
+			blocked_invites = ["discord.gg", "discord.com/invite"]
+			blocked_links = [".qp", ".cp", ".gp", ".pq", "http://", "https://", "www.", ".com", ".net", ".tk", ".uk", ".un", ".gov", ".us", ".cf", ".ml", ".bn", ".in", ".tech", ".bot", ".nu", ".gg", ".chat", ".xyz", ".ga", ".gp", ".org", ".eu", ".name", ".me", ".nl", ".tv", ".info", ".biz", ".cc", ".mobi", ".actor", ".academy", ".agency", ".accountant", ".ws", ".garden", ".cafe", ".ceo", ".care", ".art"]
+			blocked_words = ["f**k", "fuk", "fuc", "fuck", "f*ck", "bitch", "b*tch", "n*gga", "ni**a", "nigga", "vegina", "fag", "f*g", "dick", "d*ck", "penis", "porn", "sex", "s*x", "hentai", "henti", "pxrn", "p*rn", "a$$", "cunt", "c*nt", "boob", "tits", "cock", "f u c k", "s h i t", "b i t c h", "h e n t a i", "p o r n", "d!ck"]
+			whitlisted_links = ["imgure.com", "github.com", "paste.pythondiscord.com", "paste.pydis.com"]
+
+			tokens = [token for token in TOKEN_REGEX.findall(message.content) if validate_token(token)]
+			if tokens and message.author.id != self.bot.user.id:
+				await message.delete()
+				embed = discord.Embed(title="Leaked Token", description="It looks like you've acidentally leaked your token, Make sure to regenerate your token at the [Developer Portal](https://discord.com/developers). Try your best to not leak your token again.", color=0x2F3136)
+				embed.set_footer(text="Discord.py For Beginner", icon_url=logo)
+				await user.send(embed=embed)
+			for x in blocked_invites:
+				if x in message.content.lower():
+					if message.channel.id != 780280201162522634:
+						await message.delete()
+						blocked_invite = discord.Embed(title='Blocked Message', description='Your message has been blocked because it contained a Discord Invite, you may delete the blocked word and send the message again.', color=0x2F3136)
+						blocked_invite.set_footer(text='Discord.py For Beginners', icon_url=logo)
+						await user.send(embed=blocked_invite)
+			for x in pings:
+				if x in message.content.lower():
+					await message.delete()
+					await user.send("Please don't try to ping `@everyone` or `@here`. Your message has been removed.")
+			for x in blocked_links:
+				if x in message.content.lower():
+					for m in whitlisted_links:
+						if m in message.content.lower():
+							await bot.process_commands(message)
+						else:
+							await message.delete()
+							blocked_word = discord.Embed(title='Blocked Message', description='Your message has been blocked because it contained Links, you may delete the blocked word and send the message again.', color=0x2F3136)
+							blocked_word.set_footer(text='Discord.py For Beginners', icon_url=logo)
+							await user.send(embed=blocked_word)
+			for x in blocked_words:
+				if x in message.content.lower():
+					await message.delete()
+					blocked_word = discord.Embed(title='Blocked Message', description='Your message has been blocked because it contained Blocked Words, you may delete the blocked word and send the message again.', color=0x2F3136)
+					blocked_word.set_footer(text='Discord.py For Beginners', icon_url=logo)
+					await user.send(embed=blocked_word)				
+			await bot.process_commands(message)
 
 # Deletion Log
 
