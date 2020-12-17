@@ -15,7 +15,6 @@ import contextlib
 
 from random import choice
 from datetime import date
-from utils import functions
 from discord.utils import get
 from contextlib import redirect_stdout
 from discord.ext import commands, tasks
@@ -25,16 +24,24 @@ from discord.ext.commands import has_permissions, MissingPermissions, errors
 intents = discord.Intents.default()
 intents.members = True
 
-bot = commands.AutoShardedBot(command_prefix=["!", "<@!780320679886454784>", "<@!780320679886454784> "], intents=intents)
+TOKEN_REGEX = re.compile(r'[a-zA-Z0-9_-]{23,28}\.[a-zA-Z0-9_-]{6,7}\.[a-zA-Z0-9_-]{27}')
+
+def validate_token(token):
+    try:
+        # Just check if the first part validates as a user ID
+        (user_id, _, _) = token.split('.')
+        user_id = int(base64.b64decode(user_id, validate=True))
+    except (ValueError, binascii.Error):
+        return False
+    else:
+        return True
+
+bot = commands.Bot(command_prefix=["!", "<@!780320679886454784>", "<@!780320679886454784> "], intents=intents)
 
 bot.remove_command('help')
 
 TOKEN = ''
 logo = 'https://cdn.discordapp.com/avatars/780320679886454784/8e052d72bce558b6ee31cecac3d80dca.png?size=1024'
-
-config = functions.fetch("utils/cfg.json")
-functions.boot()
-bot.cache = {}
 
 # Status
 
@@ -167,7 +174,7 @@ async def on_message(message):
 			whitlisted_links = ["imgure.com", "github.com", "paste.pythondiscord.com", "paste.pydis.com"]
 
 			tokens = [token for token in TOKEN_REGEX.findall(message.content) if validate_token(token)]
-			if tokens and message.author.id != self.bot.user.id:
+			if tokens and message.author.id != bot.user.id:
 				await message.delete()
 				embed = discord.Embed(title="Leaked Token", description="It looks like you've acidentally leaked your token, Make sure to regenerate your token at the [Developer Portal](https://discord.com/developers). Try your best to not leak your token again.", color=0x2F3136)
 				embed.set_footer(text="Discord.py For Beginner", icon_url=logo)
@@ -181,8 +188,11 @@ async def on_message(message):
 						await user.send(embed=blocked_invite)
 			for x in pings:
 				if x in message.content.lower():
-					await message.delete()
-					await user.send("Please don't try to ping `@everyone` or `@here`. Your message has been removed.")
+					if message.author.guild_permissions.administrator:
+						await bot.process_commands(message)
+					else:
+						await message.delete()
+						await user.send("Please don't try to ping `@everyone` or `@here`. Your message has been removed.")
 			for x in blocked_links:
 				if x in message.content.lower():
 					for m in whitlisted_links:

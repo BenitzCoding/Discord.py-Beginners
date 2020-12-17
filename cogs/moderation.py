@@ -73,9 +73,7 @@ async def mute(ctx, user, reason):
 			return await ctx.send(f"{forbidden} Bot doesn't have create channel permission.")
 			
 			
-class Moderation:
-	"""Commands used to moderate your guild"""
-	
+class Moderation(commands.Cog):
 	def __init__(self, bot):
 		self.bot = bot
 	
