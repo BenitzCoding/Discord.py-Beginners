@@ -1,7 +1,39 @@
+import os
+import io
+import re
+import json
+import time
+import base64
+import asyncio
 import discord
+import inspect
+import aiohttp
+import datetime
+import textwrap
+import traceback
+import contextlib
 
+from random import choice
+from datetime import date
 from discord.utils import get
-from discord.ext import commands
+from contextlib import redirect_stdout
+from discord.ext import commands, tasks
+from discord_webhook import DiscordWebhook, DiscordEmbed
+from discord.ext.commands import has_permissions, MissingPermissions, errors
+
+TOKEN_REGEX = re.compile(r'[a-zA-Z0-9_-]{23,28}\.[a-zA-Z0-9_-]{6,7}\.[a-zA-Z0-9_-]{27}')
+
+def validate_token(token):
+    try:
+        # Just check if the first part validates as a user ID
+        (user_id, _, _) = token.split('.')
+        user_id = int(base64.b64decode(user_id, validate=True))
+    except (ValueError, binascii.Error):
+        return False
+    else:
+        return True
+
+logo = 'https://cdn.discordapp.com/avatars/780320679886454784/8e052d72bce558b6ee31cecac3d80dca.png?size=1024'
 
 class Filter(commands.Cog):
 	def __init__(self, bot):
@@ -11,7 +43,7 @@ class Filter(commands.Cog):
 	async def on_message(self, message):
 		if message.guild.id == 780278916173791232:
 			user = message.author
-			guild = discord.utils.get(bot.guilds, id=780278916173791232)
+			guild = discord.utils.get(self.bot.guilds, id=780278916173791232)
 			alart = discord.utils.get(guild.text_channels, id=789762003740262401)
 			pings = ["@everyone", "@here"]
 			blocked_invites = ["discord.gg", "discord.com/invite"]
@@ -22,7 +54,7 @@ class Filter(commands.Cog):
 			link_shorteners = ["ouo.io", "bit.ly", "shorte.st", "adf.ly", "bc.vc", "bit.do", "soo.gd", "7.ly", "5.gp", "tiny.cc", "zzb.bz", "adfoc.us", "my.su", "goo.gl"]
 
 			tokens = [token for token in TOKEN_REGEX.findall(message.content) if validate_token(token)]
-			if tokens and message.author.id != bot.user.id:
+			if tokens and message.author.id != self.bot.user.id:
 				await message.delete()
 				embed = discord.Embed(title="Leaked Token", description="It looks like you've acidentally leaked your token, Make sure to regenerate your token at the [Developer Portal](https://discord.com/developers). Try your best to not leak your token again.", color=0x2F3136)
 				embed.set_footer(text="Discord.py For Beginner", icon_url=logo)
@@ -31,7 +63,7 @@ class Filter(commands.Cog):
 			for x in ip_grabbers:
 				if x in message.content.lower():
 					if message.author.guild_permissions.administrator:
-						await bot.process_commands(message)
+						return
 					else:
 						await message.delete()
 						blocked_ip_grabber = discord.Embed(title='Blocked Message', description='Your message has been blocked because it contained a IP Grabber, The staff has been alarted and you will get your punishment accordingly.', color=0x2F3136)
@@ -39,7 +71,7 @@ class Filter(commands.Cog):
 						await user.send(embed=blocked_ip_grabber)
 
 						report = discord.Embed(title='New Alart', color=0x2F3136)
-						report.add_field(name='Reported User:', value=f'<@!{user.id}>({user.id}})', inline=False)
+						report.add_field(name='Reported User:', value=f'<@!{user.id}>({user.id})', inline=False)
 						report.add_field(name='IP Grabber Link:', value=f'```{message}```', inline=False)
 						report.set_thumbnail(url=ctx.author.avatar_url)
 						report.set_footer(text='Discord.py For Beginners', icon_url=logo)
@@ -49,7 +81,7 @@ class Filter(commands.Cog):
 			for x in link_shorteners:
 				if x in message.content.lower():
 					if message.author.guild_permissions.administrator:
-						await bot.process_commands(message)
+						return
 					else:
 						await message.delete()
 						blocked_short = discord.Embed(title='Blocked Message', description='Your message has been blocked because it contained a Link Shortner, please remove the shortner and send the actual link.', color=0x2F3136)
@@ -57,7 +89,7 @@ class Filter(commands.Cog):
 						await user.send(embed=blocked_short)
 
 						report = discord.Embed(title='New Alart', color=0x2F3136)
-						report.add_field(name='Reported User:', value=f'<@!{user.id}>({user.id}})', inline=False)
+						report.add_field(name='Reported User:', value=f'<@!{user.id}>({user.id})', inline=False)
 						report.add_field(name='Shortened Link:', value=f'```{message}```', inline=False)
 						report.set_thumbnail(url=ctx.author.avatar_url)
 						report.set_footer(text='Discord.py For Beginners', icon_url=logo)
@@ -74,18 +106,17 @@ class Filter(commands.Cog):
 			for x in pings:
 				if x in message.content.lower():
 					if message.author.guild_permissions.administrator:
-						await bot.process_commands(message)
+						return
 					else:
 						await message.delete()
 						await user.send("Please don't try to ping `@everyone` or `@here`. Your message has been removed.")
 
-			for x in blocked_links:
+			for x in blacklisted_links:
 				if x in message.content.lower():
-					else:
-						await message.delete()
-						blocked_word = discord.Embed(title='Blocked Message', description='Your message has been blocked because it contained blocked Links, you may delete the blocked link and send the message again.', color=0x2F3136)
-						blocked_word.set_footer(text='Discord.py For Beginners', icon_url=logo)
-						await user.send(embed=blocked_word)
+					await message.delete()
+					blocked_word = discord.Embed(title='Blocked Message', description='Your message has been blocked because it contained blocked Links, you may delete the blocked link and send the message again.', color=0x2F3136)
+					blocked_word.set_footer(text='Discord.py For Beginners', icon_url=logo)
+					await user.send(embed=blocked_word)
 
 			for x in blocked_words:
 				if x in message.content.lower():
@@ -93,6 +124,8 @@ class Filter(commands.Cog):
 					blocked_word = discord.Embed(title='Blocked Message', description='Your message has been blocked because it contained Blocked Words, you may delete the blocked word and send the message again.', color=0x2F3136)
 					blocked_word.set_footer(text='Discord.py For Beginners', icon_url=logo)
 					await user.send(embed=blocked_word)
+        else:
+            return
 
 def setup(bot):
 	bot.add_cog(Filter(bot))
