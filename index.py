@@ -128,89 +128,6 @@ async def on_command_error(ctx, err):
 		webhook.execute()
 		print(err)
 
-# ModMail and Filter
-
-@bot.event
-async def on_message(message):
-	if message.author.bot:
-		return
-	else:
-		if message.guild == None:
-			badstr = [" ", ">", "<", "+", "=", ";", ":", "[", "]", "*", "'", '"', ",", ".", "{", "}", "|", "(", ")", "$", "#", "@", "!", "^", "%", "&", "`", "~"]
-
-			Gamer = message.author
-			authname = message.author.name
-			guild = get(bot.guilds, id=780278916173791232)
-
-			authname1 = authname
-			for word in badstr:
-				authname1 = authname1.replace(word, '')
-				authdisc = message.author.discriminator
-			try:
-				channel = get(guild.text_channels, name=f'{authname1.lower()}-{authdisc.lower()}')
-				embed = discord.Embed(title=f'DM from {message.author.name}#{message.author.discriminator}', description=f'User ID: **{message.author.id}** \n\n **Message:** \n `{message.content}`', color=0x00ff00)
-				embed.set_footer(text='Created by Benitz Original#1317', icon_url=logo)
-				embed.set_thumbnail(url=message.author.avatar_url)
-				await channel.send(embed=embed)
-				emoji = '<a:Y:780327135381422140>'
-				await message.add_reaction(emoji)
-			except AttributeError:
-				category = bot.get_channel(781002010744979516)
-				guild = get(bot.guilds, id=780278916173791232)
-				await guild.create_text_channel(name=f'{authname1.lower()}-{authdisc.lower()}', overwrites=None, reason='New ModMail', category=category)
-				channel = get(guild.text_channels, name=f'{authname1.lower()}-{authdisc.lower()}')
-				embed2 = discord.Embed(title=f'DM from {message.author.name}#{message.author.discriminator}', description=f'User ID: **{message.author.id}** \n\n **Message:** \n `{message.content}`', color=0x00ff00)
-				embed2.set_footer(text='Created by Benitz Original#1317', icon_url=logo)
-				embed2.set_thumbnail(url=message.author.avatar_url)
-				await channel.send(embed=embed2)
-				emoji2 = '<a:Y:780327135381422140>'
-				await message.add_reaction(emoji2)
-		else:
-			user = message.author
-			pings = ["@everyone", "@here"]
-			blocked_invites = ["discord.gg", "discord.com/invite"]
-			blocked_links = [".qp", ".cp", ".gp", ".pq", "http://", "https://", "www.", ".com", ".net", ".tk", ".uk", ".un", ".gov", ".us", ".cf", ".ml", ".bn", ".in", ".tech", ".bot", ".nu", ".gg", ".chat", ".xyz", ".ga", ".gp", ".org", ".eu", ".name", ".me", ".nl", ".tv", ".info", ".biz", ".cc", ".mobi", ".actor", ".academy", ".agency", ".accountant", ".ws", ".garden", ".cafe", ".ceo", ".care", ".art"]
-			blocked_words = ["f**k", "fuk", "fuc", "fuck", "f*ck", "bitch", "b*tch", "n*gga", "ni**a", "nigga", "vegina", "fag", "f*g", "dick", "d*ck", "penis", "porn", "sex", "s*x", "hentai", "henti", "pxrn", "p*rn", "a$$", "cunt", "c*nt", "boob", "tits", "cock", "f u c k", "s h i t", "b i t c h", "h e n t a i", "p o r n", "d!ck"]
-			whitlisted_links = ["imgure.com", "github.com", "paste.pythondiscord.com", "paste.pydis.com"]
-
-			tokens = [token for token in TOKEN_REGEX.findall(message.content) if validate_token(token)]
-			if tokens and message.author.id != bot.user.id:
-				await message.delete()
-				embed = discord.Embed(title="Leaked Token", description="It looks like you've acidentally leaked your token, Make sure to regenerate your token at the [Developer Portal](https://discord.com/developers). Try your best to not leak your token again.", color=0x2F3136)
-				embed.set_footer(text="Discord.py For Beginner", icon_url=logo)
-				await user.send(embed=embed)
-			for x in blocked_invites:
-				if x in message.content.lower():
-					if message.channel.id != 780280201162522634:
-						await message.delete()
-						blocked_invite = discord.Embed(title='Blocked Message', description='Your message has been blocked because it contained a Discord Invite, you may delete the blocked word and send the message again.', color=0x2F3136)
-						blocked_invite.set_footer(text='Discord.py For Beginners', icon_url=logo)
-						await user.send(embed=blocked_invite)
-			for x in pings:
-				if x in message.content.lower():
-					if message.author.guild_permissions.administrator:
-						await bot.process_commands(message)
-					else:
-						await message.delete()
-						await user.send("Please don't try to ping `@everyone` or `@here`. Your message has been removed.")
-			for x in blocked_links:
-				if x in message.content.lower():
-					for m in whitlisted_links:
-						if m in message.content.lower():
-							await bot.process_commands(message)
-						else:
-							await message.delete()
-							blocked_word = discord.Embed(title='Blocked Message', description='Your message has been blocked because it contained Links, you may delete the blocked word and send the message again.', color=0x2F3136)
-							blocked_word.set_footer(text='Discord.py For Beginners', icon_url=logo)
-							await user.send(embed=blocked_word)
-			for x in blocked_words:
-				if x in message.content.lower():
-					await message.delete()
-					blocked_word = discord.Embed(title='Blocked Message', description='Your message has been blocked because it contained Blocked Words, you may delete the blocked word and send the message again.', color=0x2F3136)
-					blocked_word.set_footer(text='Discord.py For Beginners', icon_url=logo)
-					await user.send(embed=blocked_word)				
-			await bot.process_commands(message)
-
 # Deletion Log
 
 @bot.event
@@ -758,6 +675,42 @@ async def shutdown(ctx):
 		await bot.logout()
 	else:
 		await ctx.send("<:F:780326063120318465> You don't have access to that command.")
+
+# Load Cog
+
+@bot.command()
+@commands.is_owner()
+async def load(ctx, *, name: str):
+	try:
+		bot.load_extension(f"cogs.{name}")
+	except Exception as e:
+		return await ctx.send(default.traceback_maker(e))
+	em = discord.Embed(title="Cog Loaded", description=f"**{name}** cog has been loaded.", color=0x00FF00)
+	await ctx.send(embed=em)
+
+# Unload Cog
+
+@bot.command()
+@commands.is_owner()
+async def unload(ctx, *, name: str):
+	try:
+		bot.unload_extension(f"cogs.{name}")
+	except Exception as e:
+		return await ctx.send(default.traceback_maker(e))
+	em = discord.Embed(title="Cog Unloaded", description=f"**{name}** cog has been unloaded.", color=0x00FF00)
+	await ctx.send(embed=em)
+
+# Reload Cog
+
+@bot.command()
+@commands.is_owner()
+async def reload(ctx, *, name: str):
+	try:
+		bot.reload_extension(f"cogs.{name}")
+	except Exception as e:
+		return await ctx.send(default.traceback_maker(e))
+	em = discord.Embed(title="Cog Reloaded", description=f"**{name}** cog has been reloaded.", color=0x00FF00)
+	await ctx.send(embed=em)
 
 # Read Cogs
 

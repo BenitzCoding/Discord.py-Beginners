@@ -2,9 +2,9 @@ import discord
 from discord.ext import commands
 
 # Emoji Definitions
-removed_user = "<:U:789419918662959146>"
-unmute_infraction = "<:U:789423352628248596>"
-mute_infraction = "<:M:789408781493600266>"
+removed_user = "https://images-ext-1.discordapp.net/external/FQNgUBUW_ueW0eMgsyOXZ_PWTp3bicrIa1BYVuVebMg/https/cdn.discordapp.com/emojis/469952898026045441.png"
+unmute_infraction = "https://images-ext-1.discordapp.net/external/Sbcg9dEw8D8cZ76o0jnDL97MKdQ0jOSXbZPS4CzLDCc/https/cdn.discordapp.com/emojis/472472639206719508.png"
+mute_infraction = "https://images-ext-1.discordapp.net/external/VxXsa6O2RyiK6GfSdeez3WSxPibPVu6X8B2d_c4PoVw/https/cdn.discordapp.com/emojis/472472640100106250.png"
 forbidden = "<:F:780326063120318465>"
 success = "<:D:780326344889860136>"
 logo = 'https://cdn.discordapp.com/avatars/780320679886454784/8e052d72bce558b6ee31cecac3d80dca.png?size=1024'
@@ -45,8 +45,8 @@ async def mute(ctx, user, reason):
 		await user.add_roles(muted) # adds newly created muted role
 		try:
 			notify_user = discord.Embed(description=f"\n**Type:** Mute\n**Expires:** Permenant\n**Reason:** `{reason}`", color=0xCD6D6D)
-			notify_user.set_author(text=f"{mute_infraction} Infraction Information")
-			notify_user.set_footer(text="Discord.py For Beginners", icon_url=logo)
+			notify_user.set_author(name=f"Infraction Information", icon_url=mute_infraction)
+			
 			await user.send(embed=notify_user)
 			await ctx.send(f"{success} muted user *user was notified*")
 		except discord.Forbidden:
@@ -55,8 +55,8 @@ async def mute(ctx, user, reason):
 		await user.add_roles(role) # adds already existing muted role
 		try:
 			notify_user = discord.Embed(description=f"\n**Type:** Mute\n**Expires:** Permenant\n**Reason:** `{reason}`", color=0xCD6D6D)
-			notify_user.set_author(text=f"{mute_infraction} Infraction Information")
-			notify_user.set_footer(text="Discord.py For Beginners", icon_url=logo)
+			notify_user.set_author(name=f"Infraction Information", icon_url=mute_infraction)
+			
 			await user.send(embed=notify_user)
 			await ctx.send(f"{success} muted user *user was notified*")
 		except discord.Forbidden:
@@ -94,8 +94,8 @@ class Moderation(commands.Cog):
 
 		try:
 			notify_user = discord.Embed(description=f"\n**Type:** Ban\n**Expires:** Permenant\n**Reason:** `{reason}`", color=0xCD6D6D)
-			notify_user.set_author(text=f"{removed_user} Infraction Information")
-			notify_user.set_footer(text="Discord.py For Beginners", icon_url=logo)
+			notify_user.set_author(name=f"Infraction Information", icon_url=removed_user)
+			
 			await user.send(embed=notify_user)
 			await ctx.send(f"{success} banned user *user was notified*")
 		except discord.Forbidden:
@@ -119,8 +119,7 @@ class Moderation(commands.Cog):
 
 		try:
 			notify_user = discord.Embed(description=f"\n**Type:** Soft-Ban\n**Reason:** `{reason}`", color=0xCD6D6D)
-			notify_user.set_author(text=f"{removed_user} Infraction Information")
-			notify_user.set_footer(text="Discord.py For Beginners", icon_url=logo)
+			notify_user.set_author(name=f"Infraction Information", icon_url=removed_user)
 			await user.send(embed=notify_user)
 			await ctx.send(f"{success} soft-banned user *user was notified*")
 		except discord.Forbidden:
@@ -149,12 +148,12 @@ class Moderation(commands.Cog):
 		
 		try:
 			notify_user = discord.Embed(description=f"\n**Type:** Kick\n**Reason:** `{reason}`", color=0xCD6D6D)
-			notify_user.set_author(text=f"{removed_user} Infraction Information")
-			notify_user.set_footer(text="Discord.py For Beginners", icon_url=logo)
+			notify_user.set_author(name=f"Infraction Information", icon_url=removed_user)
+			
 			await user.send(embed=notify_user)
-			await ctx.send(f"{success} soft-banned user *user was notified*")
+			await ctx.send(f"{success} kicked user *user was notified*")
 		except discord.Forbidden:
-			await ctx.send(f"{success} soft-banned user *user was not notified*")
+			await ctx.send(f"{success} kicked user *user was not notified*")
 
 		else:
 			try: # tries to kick user
@@ -176,8 +175,8 @@ class Moderation(commands.Cog):
 		await user.remove_roles(mute_role, reason=f"User unmuted by {ctx.author.name}") # removes muted role
 		try:
 			notify_user = discord.Embed(description=f"You may now send messages in the server.", color=0x68C290)
-			notify_user.set_author(text=f"{unmute_infraction} You have been unmuted")
-			notify_user.set_footer(text="Discord.py For Beginners", icon_url=logo)
+			notify_user.set_author(name=f"You have been unmuted", icon_url=unmute_infraction)
+			
 			await user.send(embed=notify_user)
 			await ctx.send(f"{success} unmuted user *user was notified*")
 		except discord.Forbidden:
@@ -198,8 +197,8 @@ class Moderation(commands.Cog):
 		await ctx.set_permissions(user, send_messages=False) # sets permissions for current channel
 		try:
 			notify_user = discord.Embed(description=f"\n**Type:** Channel_Block\n**Expires:** Permenant\n**Reason:** `{reason}`", color=0xCD6D6D)
-			notify_user.set_author(text=f"{mute_infraction} Infraction Information")
-			notify_user.set_footer(text="Discord.py For Beginners", icon_url=logo)
+			notify_user.set_author(name=f"Infraction Information", icon_url=mute_infraction)
+			
 			await user.send(embed=notify_user)
 			await ctx.send(f"{success} blocked user *user was notified*")
 		except discord.Forbidden:
@@ -215,8 +214,8 @@ class Moderation(commands.Cog):
 		await ctx.set_permissions(user, send_messages=True) # gives back send messages permissions
 		try:
 			notify_user = discord.Embed(description=f"You may now send messages in <#{ctx.channel.id}>.", color=0x68C290)
-			notify_user.set_author(text=f"{unmute_infraction} You have been unblocked")
-			notify_user.set_footer(text="Discord.py For Beginners", icon_url=logo)
+			notify_user.set_author(name=f"You have been unblocked", icon_url=unmute_infraction)
+			
 			await user.send(embed=notify_user)
 			await ctx.send(f"{success} unblocked user *user was notified*")
 		except discord.Forbidden:
