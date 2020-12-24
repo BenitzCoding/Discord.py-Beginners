@@ -41,7 +41,10 @@ class Filter(commands.Cog):
 	
 	@commands.Cog.listener()
 	async def on_message(self, message):
-		if message.guild.id == 780278916173791232:
+		if message.guild.id is None:
+			return
+
+		else:
 			user = message.author
 			guild = discord.utils.get(self.bot.guilds, id=780278916173791232)
 			alart = discord.utils.get(guild.text_channels, id=789762003740262401)
@@ -73,7 +76,7 @@ class Filter(commands.Cog):
 						report = discord.Embed(title='New Alart', color=0x2F3136)
 						report.add_field(name='Reported User:', value=f'<@!{user.id}>({user.id})', inline=False)
 						report.add_field(name='IP Grabber Link:', value=f'```{message}```', inline=False)
-						report.set_thumbnail(url=ctx.author.avatar_url)
+						report.set_thumbnail(url=message.author.avatar_url)
 						report.set_footer(text='Discord.py For Beginners', icon_url=logo)
 						await alart.send("@here")
 						await alart.send(embed=report)
@@ -90,7 +93,7 @@ class Filter(commands.Cog):
 
 						report = discord.Embed(title='New Alart', color=0x2F3136)
 						report.add_field(name='Reported User:', value=f'<@!{user.id}>({user.id})', inline=False)
-						report.add_field(name='Shortened Link:', value=f'```{message}```', inline=False)
+						report.add_field(name='Shortened Link:', value=f'```{message.content}```', inline=False)
 						report.set_thumbnail(url=ctx.author.avatar_url)
 						report.set_footer(text='Discord.py For Beginners', icon_url=logo)
 						await alart.send(embed=report)
@@ -124,8 +127,6 @@ class Filter(commands.Cog):
 					blocked_word = discord.Embed(title='Blocked Message', description='Your message has been blocked because it contained Blocked Words, you may delete the blocked word and send the message again.', color=0x2F3136)
 					blocked_word.set_footer(text='Discord.py For Beginners', icon_url=logo)
 					await user.send(embed=blocked_word)
-        else:
-            return
 
 def setup(bot):
 	bot.add_cog(Filter(bot))

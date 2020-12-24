@@ -20,13 +20,6 @@ class Events(commands.Cog):
 	@commands.command(name='eval')
 	@commands.is_owner()
 	async def _eval(ctx, *, body):
-		"""Evaluates python code"""
-		blocked_words = ['.delete()', 'os', 'subprocess', 'history()', '("token")', "('token')",
-						 'aW1wb3J0IG9zCnJldHVybiBvcy5lbnZpcm9uLmdldCgndG9rZW4nKQ==', 'aW1wb3J0IG9zCnByaW50KG9zLmVudmlyb24uZ2V0KCd0b2tlbicpKQ==']
-		if ctx.author.id != bot.owner_id:
-			for x in blocked_words:
-				if x in body:
-					return await ctx.send('Your code contains certain blocked words.')
 		env = {
 			'ctx': ctx,
 			'channel': ctx.channel,
@@ -98,11 +91,14 @@ class Events(commands.Cog):
 						await ctx.send(f'```py\n{page}\n```')
 
 		if out:
-			await ctx.message.add_reaction('\u2705')  # tick
+			emoji = "<:S:790882958574616616>"
+			await ctx.message.add_reaction(emoji)  # tick
 		elif err:
-			await ctx.message.add_reaction('\u2049')  # x
+			emoji = "<:F:780326063120318465>"
+			await ctx.message.add_reaction(emoji)  # x
 		else:
-			await ctx.message.add_reaction('\u2705')
+			emoji = "<:Q:790885342840487956>"
+			await ctx.message.add_reaction(emoji)
 
 	def cleanup_code(content):
 		"""Automatically removes code blocks from the code."""

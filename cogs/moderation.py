@@ -1,7 +1,10 @@
 import discord
+import json
+
 from discord.ext import commands
 
 # Emoji Definitions
+
 removed_user = "https://images-ext-1.discordapp.net/external/FQNgUBUW_ueW0eMgsyOXZ_PWTp3bicrIa1BYVuVebMg/https/cdn.discordapp.com/emojis/469952898026045441.png"
 unmute_infraction = "https://images-ext-1.discordapp.net/external/Sbcg9dEw8D8cZ76o0jnDL97MKdQ0jOSXbZPS4CzLDCc/https/cdn.discordapp.com/emojis/472472639206719508.png"
 mute_infraction = "https://images-ext-1.discordapp.net/external/VxXsa6O2RyiK6GfSdeez3WSxPibPVu6X8B2d_c4PoVw/https/cdn.discordapp.com/emojis/472472640100106250.png"
@@ -9,70 +12,81 @@ forbidden = "<:F:780326063120318465>"
 success = "<:D:780326344889860136>"
 logo = 'https://cdn.discordapp.com/avatars/780320679886454784/8e052d72bce558b6ee31cecac3d80dca.png?size=1024'
 
-# This prevents staff members from being punished 
+#Classes
+
 class Sinner(commands.Converter):
 	async def convert(self, ctx, argument):
-		argument = await commands.MemberConverter().convert(ctx, argument) # gets a member object
-		permission = argument.guild_permissions.manage_messages # can change into any permission
-		if not permission: # checks if user has the permission
-			return argument # returns user object
+		argument = await commands.MemberConverter().convert(ctx, argument)
+		permission = argument.guild_permissions.manage_messages
+		if not permission:
+			return argument 
 		else:
-			raise commands.BadArgument(f"{forbidden} You can't use moderation commands against other staff members.") # tells user that target is a staff member
+			raise commands.BadArgument(f"{forbidden} You can't use moderation commands against other staff members.")
 
-# Checks if you have a muted role
+
 class Redeemed(commands.Converter):
 	async def convert(self, ctx, argument):
-		argument = await commands.MemberConverter().convert(ctx, argument) # gets member object
-		muted = discord.utils.get(ctx.guild.roles, name="Muted") # gets role object
-		if muted in argument.roles: # checks if user has muted role
-			return argument # returns member object if there is muted role
+		argument = await commands.MemberConverter().convert(ctx, argument)
+		muted = discord.utils.get(ctx.guild.roles, name="Muted")
+		if muted in argument.roles:
+			return argument
 		else:
-			raise commands.BadArgument(f"{forbidden} The user was not muted.") # self-explainatory
+			raise commands.BadArgument(f"{forbidden} {argument.name}#{argument.discriminator} was not muted.")
 			
-# Checks if there is a muted role on the server and creates one if there isn't
+# Definitions
+
+async def update_data(users, user):
+	if not f'{user.id}' in users:
+		users[f'{user.id}'] = {}
+		users[f'{user.id}']['warns'] = 0
+
+async def add_warns(users, user, warns):
+	users[f'{user.id}']['warns'] += 1
+
 async def mute(ctx, user, reason):
-	role = discord.utils.get(ctx.guild.roles, name="Muted") # retrieves muted role returns none if there isn't 
-	hell = discord.utils.get(ctx.guild.text_channels, name="you-are-muted") # retrieves channel named hell returns none if there isn't
-	if not role: # checks if there is muted role
-		try: # creates muted role 
+	role = discord.utils.get(ctx.guild.roles, name="Muted")
+	hell = discord.utils.get(ctx.guild.text_channels, name="you-are-muted")
+	if not role:
+		try:
 			muted = await ctx.guild.create_role(name="Muted", reason="To use for muting")
-			for channel in ctx.guild.channels: # removes permission to view and send in the channels 
+			for channel in ctx.guild.channels:
 				await channel.set_permissions(muted, send_messages=False,
 											  read_message_history=False,
 											  read_messages=False)
 		except discord.Forbidden:
-			return await ctx.send(f"{forbidden} Bot does not have permission to create a `muted` role.") # self-explainatory
-		await user.add_roles(muted) # adds newly created muted role
+			return await ctx.send(f"{forbidden} Bot does not have permission to create a `muted` role.")
+		await user.add_roles(muted)
 		try:
-			notify_user = discord.Embed(description=f"\n**Type:** Mute\n**Expires:** Permenant\n**Reason:** `{reason}`", color=0xCD6D6D)
+			notify_user = discord.Embed(description=f"\n**Type:** Mute\n**Expires:** N/A\n**Reason:** `{reason}`", color=0xCD6D6D)
 			notify_user.set_author(name=f"Infraction Information", icon_url=mute_infraction)
 			
 			await user.send(embed=notify_user)
-			await ctx.send(f"{success} muted user *user was notified*")
+			await ctx.send(f"{success} muted {user.name}#{user.discriminator} *User was notified*")
 		except discord.Forbidden:
-			await ctx.send(f"{success} muted user *user was not notified*")
+			await ctx.send(f"{success} muted {user.name}#{user.discriminator} *User was not notified*")
 	else:
 		await user.add_roles(role) # adds already existing muted role
 		try:
-			notify_user = discord.Embed(description=f"\n**Type:** Mute\n**Expires:** Permenant\n**Reason:** `{reason}`", color=0xCD6D6D)
+			notify_user = discord.Embed(description=f"\n**Type:** Mute\n**Expires:** N/A\n**Reason:** `{reason}`", color=0xCD6D6D)
 			notify_user.set_author(name=f"Infraction Information", icon_url=mute_infraction)
 			
 			await user.send(embed=notify_user)
-			await ctx.send(f"{success} muted user *user was notified*")
+			await ctx.send(f"{success} muted {user.name}#{user.discriminator} *User was notified*")
 		except discord.Forbidden:
-			await ctx.send(f"{success} muted user *user was not notified*")
+			await ctx.send(f"{success} muted {user.name}#{user.discriminator} *User was not notified*")
 	   
-	if not hell: # checks if there is a channel named hell
+	if not hell:
 		overwrites = {ctx.guild.default_role: discord.PermissionOverwrite(read_message_history=False),
 					  ctx.guild.me: discord.PermissionOverwrite(send_messages=True),
-					  muted: discord.PermissionOverwrite(read_message_history=True)} # permissions for the channel
-		try: # creates the channel and sends a message
+					  muted: discord.PermissionOverwrite(read_message_history=True)}
+		try:
 			channel = await ctx.create_channel('you-are-muted', overwrites=overwrites)
 			await channel.send("Checking if channel exists.")
 		except discord.Forbidden:
 			return await ctx.send(f"{forbidden} Bot doesn't have create channel permission.")
 			
-			
+# Main Cog
+
 class Moderation(commands.Cog):
 	def __init__(self, bot):
 		self.bot = bot
@@ -84,24 +98,23 @@ class Moderation(commands.Cog):
 	@commands.command(aliases=["banish", "punish"])
 	@commands.has_permissions(ban_members=True)
 	async def ban(self, ctx, user: Sinner=None, reason=None):
-		"""Casts users out of heaven."""
 		
-		if not user: # checks if there is a user
+		if not user:
 			return await ctx.send(f"{forbidden} No user was specified")
 		
 		if reason is None:
 			return await ctx.send(f"{forbidden} Please provide a reason.")
 
 		try:
-			notify_user = discord.Embed(description=f"\n**Type:** Ban\n**Expires:** Permenant\n**Reason:** `{reason}`", color=0xCD6D6D)
+			notify_user = discord.Embed(description=f"\n**Type:** Ban\n**Expires:** N/A\n**Reason:** `{reason}`", color=0xCD6D6D)
 			notify_user.set_author(name=f"Infraction Information", icon_url=removed_user)
 			
 			await user.send(embed=notify_user)
-			await ctx.send(f"{success} banned user *user was notified*")
+			await ctx.send(f"{success} banned {user.name}#{user.discriminator} *User was notified*")
 		except discord.Forbidden:
-			await ctx.send(f"{success} banned user *user was not notified*")
+			await ctx.send(f"{success} banned {user.name}#{user.discriminator} *User was not notified*")
 		
-		try: # Tries to ban user
+		try:
 			await ctx.guild.ban(user, reason=f"{reason}")
 			await ctx.send(f"{user.mention} was cast out of heaven for {reason}.")
 		except discord.Forbidden:
@@ -109,9 +122,7 @@ class Moderation(commands.Cog):
 
 	@commands.command()
 	async def softban(self, ctx, user: Sinner=None, reason=None):
-		"""Temporarily restricts access to heaven."""
-		
-		if not user: # checks if there is a user
+		if not user:
 			return await ctx.send(f"{forbidden} No user was specified")
 		
 		if reason is None:
@@ -121,26 +132,26 @@ class Moderation(commands.Cog):
 			notify_user = discord.Embed(description=f"\n**Type:** Soft-Ban\n**Reason:** `{reason}`", color=0xCD6D6D)
 			notify_user.set_author(name=f"Infraction Information", icon_url=removed_user)
 			await user.send(embed=notify_user)
-			await ctx.send(f"{success} soft-banned user *user was notified*")
+			await ctx.send(f"{success} soft-banned {user.name}#{user.discriminator} *User was notified*")
 		except discord.Forbidden:
-			await ctx.send(f"{success} soft-banned user *user was not notified*")
+			await ctx.send(f"{success} soft-banned {user.name}#{user.discriminator} *User was not notified*")
 
-		try: # Tries to soft-ban user
+		try:
 			await ctx.guild.ban(user, reason=reason) 
 			await ctx.guild.unban(user, "Soft-Ban Expired")
 		except discord.Forbidden:
 			return await ctx.send(f"{forbidden} unable to soft-ban user")
 	
 	@commands.command()
-	async def mute(self, ctx, user: Sinner, reason=None):
+	async def mute(self, ctx, user: Sinner, *, reason=None):
 		if reason is None:
 			await ctx.send(f"{forbidden} Please provide a reason.")
 		else:
-			await mute(ctx, user, reason=reason) # uses the mute function
+			await mute(ctx, user, reason=reason)
 	
 	@commands.command()
-	async def kick(self, ctx, user: Sinner=None, reason=None):
-		if not user: # checks if there is a user 
+	async def kick(self, ctx, user: Sinner=None, *, reason=None):
+		if not user:
 			return await ctx.send(f"{forbidden} No user was specified")
 		
 		if reason is None:
@@ -151,78 +162,70 @@ class Moderation(commands.Cog):
 			notify_user.set_author(name=f"Infraction Information", icon_url=removed_user)
 			
 			await user.send(embed=notify_user)
-			await ctx.send(f"{success} kicked user *user was notified*")
+			await ctx.send(f"{success} kicked {user.name}#{user.discriminator} *User was notified*")
 		except discord.Forbidden:
-			await ctx.send(f"{success} kicked user *user was not notified*")
+			await ctx.send(f"{success} kicked {user.name}#{user.discriminator} *User was not notified*")
 
 		else:
-			try: # tries to kick user
+			try:
 				await ctx.guild.kick(user, reason=f"{reason}")
 			except discord.Forbidden:
 				return await ctx.send(f"{forbidden} unable to kick user")
 
 	@commands.command()
 	async def purge(self, ctx, limit: int):
-		"""Bulk deletes messages"""
-		
-		await ctx.purge(limit=limit + 1) # also deletes your own message
+		await ctx.purge(limit=limit + 1)
 		await ctx.send(f"{success} `{limit}` messages deleted.", delete_after=3) 
 	
 	@commands.command()
 	async def unmute(self, ctx, user: Redeemed):
-		"""Unmutes a muted user"""
 		mute_role = discord.utils.get(ctx.guild.roles, name="Muted")
-		await user.remove_roles(mute_role, reason=f"User unmuted by {ctx.author.name}") # removes muted role
+		await user.remove_roles(mute_role, reason=f"User unmuted by {ctx.author.name}")
 		try:
 			notify_user = discord.Embed(description=f"You may now send messages in the server.", color=0x68C290)
 			notify_user.set_author(name=f"You have been unmuted", icon_url=unmute_infraction)
 			
 			await user.send(embed=notify_user)
-			await ctx.send(f"{success} unmuted user *user was notified*")
+			await ctx.send(f"{success} unmuted {user.name}#{user.discriminator} *User was notified*")
 		except discord.Forbidden:
-			await ctx.send(f"{success} unmuted user *user was not notified*")
+			await ctx.send(f"{success} unmuted {user.name}#{user.discriminator} *User was not notified*")
 
 	@commands.command()
-	async def block(self, ctx, user: Sinner=None):
-		"""
-		Blocks a user from chatting in current channel.
-		   
-		Similar to mute but instead of restricting access
-		to all channels it restricts in current channel.
-		"""
-								
-		if not user: # checks if there is user
+	@commands.has_permissions(manage_messages=True)
+	async def block(self, ctx, user: Sinner=None, *, reason=None):
+
+		if not user:
 			return await ctx.send(f"{forbidden} No user was specified")
-								
-		await ctx.set_permissions(user, send_messages=False) # sets permissions for current channel
+
+		if reason is None:
+			return await ctx.send(f"{forbidden} Please Provide a reason.")
+
+		await ctx.set_permissions(user, send_messages=False)
 		try:
-			notify_user = discord.Embed(description=f"\n**Type:** Channel_Block\n**Expires:** Permenant\n**Reason:** `{reason}`", color=0xCD6D6D)
+			notify_user = discord.Embed(description=f"\n**Type:** Channel_Block\n**Expires:** N/A\n**Reason:** `{reason}`", color=0xCD6D6D)
 			notify_user.set_author(name=f"Infraction Information", icon_url=mute_infraction)
 			
 			await user.send(embed=notify_user)
-			await ctx.send(f"{success} blocked user *user was notified*")
+			await ctx.send(f"{success} blocked {user.name}#{user.discriminator} *User was notified*")
 		except discord.Forbidden:
-			await ctx.send(f"{success} blocked user *user was not notified*")
+			await ctx.send(f"{success} blocked {user.name}#{user.discriminator} *User was not notified*")
 	
 	@commands.command()
+	@commands.has_permissions(manage_messages=True)
 	async def unblock(self, ctx, user: Sinner=None):
-		"""Unblocks a user from current channel"""
 								
-		if not user: # checks if there is user
+		if not user:
 			return await ctx.send(f"{forbidden} You must specify a valid user")
 		
-		await ctx.set_permissions(user, send_messages=True) # gives back send messages permissions
+		await ctx.set_permissions(user, send_messages=True)
 		try:
 			notify_user = discord.Embed(description=f"You may now send messages in <#{ctx.channel.id}>.", color=0x68C290)
 			notify_user.set_author(name=f"You have been unblocked", icon_url=unmute_infraction)
 			
 			await user.send(embed=notify_user)
-			await ctx.send(f"{success} unblocked user *user was notified*")
+			await ctx.send(f"{success} unblocked {user.name}#{user.discriminator} *User was notified*")
 		except discord.Forbidden:
-			await ctx.send(f"{success} unblocked user *user was not notified*")
-
-	
-								
-								
+			await ctx.send(f"{success} unblocked {user.name}#{user.discriminator} *User was not notified*")
+				
 def setup(bot):
 	bot.add_cog(Moderation(bot))

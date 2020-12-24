@@ -15,6 +15,7 @@ import contextlib
 
 from random import choice
 from datetime import date
+from utils import default
 from discord.utils import get
 from contextlib import redirect_stdout
 from discord.ext import commands, tasks
@@ -152,7 +153,7 @@ async def modclose(ctx, user: discord.Member):
 			notification = discord.Embed(title='ModMail Ended', description='This Modmail conversation has been ended, the Staff has been disconnected from the conversation.', color=0x2F3136)
 			notification.set_footer(text='Discord.py For Beginners', icon_url=f'{logo}')
 			await user.send(embed=notification)
-			await ctx.send('<:D:780326344889860136> ModMail Ended. Deleting Channel in 5 seconds')
+			await ctx.send('<:S:790882958574616616> ModMail Ended. Deleting Channel in 5 seconds')
 			await asyncio.sleep(5)
 			await ctx.channel.delete(reason='ModMail Support Ended.')
 		else:
@@ -561,11 +562,11 @@ async def report(ctx, suspect: discord.Member, *, crime: commands.clean_content)
 async def close(ctx):
 	if ctx.channel.category_id == 780420074719936534:
 		if ctx.channel.name == f'ticket-{ctx.author.discriminator}':
-			await ctx.send('<:D:780326344889860136> Closing Ticket in 5 seconds.')
+			await ctx.send('<:S:790882958574616616> Closing Ticket in 5 seconds.')
 			await asyncio.sleep(5)
 			await ctx.channel.delete(reason="Author of this ticket decided to close it.")
 		elif ctx.author.guild_permissions.administrator:
-			await ctx.send('<:D:780326344889860136> Closing Ticket in 5 seconds.')
+			await ctx.send('<:S:790882958574616616> Closing Ticket in 5 seconds.')
 			await asyncio.sleep(5)
 			await ctx.channel.delete(reason="Author of this ticket decided to close it.")
 		else:
@@ -595,7 +596,7 @@ async def ticket(ctx, *, reason=None):
 			embed.set_thumbnail(url=ctx.author.avatar_url)
 			embed.set_footer(text='Discord.py For Beginners', icon_url=logo)
 			await chan.send(embed=embed)
-			await ctx.send(f'<:D:780326344889860136> Your Ticket has been created! <#{chan.id}>')
+			await ctx.send(f'<:S:790882958574616616> Your Ticket has been created! <#{chan.id}>')
 	else:
 		await ctx.send('<:F:780326063120318465> You can only create tickets in <#780418954236788737>.')
 
@@ -669,7 +670,7 @@ async def ping(ctx):
 async def shutdown(ctx):
 	access = [529499034495483926, 635838945862746113]
 	if ctx.author.id == access:
-		await ctx.send('<:D:780326344889860136> Bot is shutting down.')
+		await ctx.send('<:S:790882958574616616> Bot is shutting down.')
 		await ctx.message.delete(ctx.message)
 		await bot.change_presence(status=discord.Status.offline)
 		await bot.logout()
