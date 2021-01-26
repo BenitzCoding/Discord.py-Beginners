@@ -41,7 +41,6 @@ bot = commands.Bot(command_prefix=["!", "<@!780320679886454784>", "<@!7803206798
 
 bot.remove_command('help')
 
-TOKEN = ''
 logo = 'https://cdn.discordapp.com/avatars/780320679886454784/8e052d72bce558b6ee31cecac3d80dca.png?size=1024'
 
 # Status
