@@ -13,6 +13,7 @@ import textwrap
 import traceback
 import contextlib
 
+from discord_slash import SlashCommand, SlashContext
 from random import choice
 from datetime import date
 from utils import default
@@ -38,6 +39,7 @@ def validate_token(token):
         return True
 
 bot = commands.Bot(command_prefix=["!", "<@!780320679886454784>", "<@!780320679886454784> "], intents=intents)
+slash = SlashCommand(bot)
 
 bot.remove_command('help')
 
@@ -112,7 +114,7 @@ async def on_member_remove(member):
 # Error Handler
 
 @bot.event
-async def on_command_error(ctx, err):
+async def on_command_error(ctx: SlashContext, err):
 	if isinstance(err, errors.CommandOnCooldown):
 		await ctx.send(f":stopwatch: Command is on Cooldown, please try again in {err.retry_after:.2f} seconds.")
 	elif isinstance(err, errors.MissingPermissions):
@@ -145,8 +147,9 @@ async def on_message_delete(message):
 
 # ModMail End
 
-@bot.command()
-async def modclose(ctx, user: discord.Member):
+@slash.slash(name="modclose", description="Closes Modmail Conversation")
+async def modclose(ctx: SlashContext, user: discord.Member):
+	await ctx.respond()
 	if ctx.author.guild_permissions.ban_members:
 		if ctx.channel.category_id == 781002010744979516:
 			notification = discord.Embed(title='ModMail Ended', description='This Modmail conversation has been ended, the Staff has been disconnected from the conversation.', color=0x2F3136)
@@ -164,8 +167,8 @@ async def modclose(ctx, user: discord.Member):
 
 # Source Command
 
-@bot.command(aliases = ["sourcecode", "source-code"])
-async def source(ctx):
+@slash.slash(name="source", description="Shows the bot's source code." aliases = ["sourcecode", "source-code"])
+async def source(ctx: SlashContext):
 	embed = discord.Embed(title='Discord.py Beginner Source-Code', description="Here is the source Code for Discord.py Beginner's Official Bot.\n https://github.com/BenitzCoding/Discord.py-Begginners", color=0x2F3136)
 	embed.set_image(url='https://media.discordapp.net/attachments/715492844768591945/783944318133600266/source.png?width=961&height=541')
 	embed.set_footer(text='Discord.py For Beginners', icon_url=logo)
@@ -173,9 +176,10 @@ async def source(ctx):
 
 # Reminder
 
-@bot.command(case_insensitive = True, aliases = ["remind", "remindme", "remind_me"])
+@slash.slash(name="reminder", description="reminds you something after said amount of time." case_insensitive = True, aliases = ["remind", "remindme", "remind_me"])
 @commands.bot_has_permissions(attach_files = True, embed_links = True)
-async def reminder(ctx, time, *, reminder):
+async def reminder(ctx: SlashContext, time, *, reminder):
+	await ctx.respond()
 	print(time)
 	print(reminder)
 	user = ctx.message.author
@@ -217,9 +221,10 @@ async def reminder(ctx, time, *, reminder):
 
 # Tempban
 
-@bot.command(case_insensitive = True, aliases = ["temp-ban", "temp_ban"])
+@slash.slash(name="tempban", description="Temps bans a user." case_insensitive = True, aliases = ["temp-ban", "temp_ban"])
 @commands.bot_has_permissions(ban_members = True)
-async def tempban(ctx, user: discord.Member, time, *, reason):
+async def tempban(ctx: SlashContext, user: discord.Member, time, *, reason):
+	await ctx.respond()
 	print(time)
 	print(reminder)
 	user = ctx.message.author
@@ -272,9 +277,10 @@ async def tempban(ctx, user: discord.Member, time, *, reason):
 
 # ModMail Reply
 
-@bot.command()
+@slash.slash(name="modrep", description="Replies to ModMail.")
 @commands.has_permissions(manage_messages=True)
-async def modrep(ctx, user: discord.Member, *, message: str):
+async def modrep(ctx: SlashContext, user: discord.Member, *, message: str):
+	await ctx.respond()
 	try:
 		embed = discord.Embed(title='Modmail Support', description=f'{message}', color=0x2F3136)
 		embed.set_footer(text=f'Discord.py For Beginners', icon_url=logo)
@@ -285,17 +291,20 @@ async def modrep(ctx, user: discord.Member, *, message: str):
 
 # Add Bot Command
 
-@bot.command()
-async def addbot(ctx, curl, *, reason):
+@slash.slash(name="addbot", description="Gives a request to admins about adding a bot.")
+async def addbot(ctx: SlashContext, url, *, reason):
+	await ctx.respond()
 	if reason is None:
 		reply = discord.Embed(title='Bot was not Requested', description='Your Bot was not requested, please specify a reason for your bot to be added.', color=0x2F3136)
 		reply.set_footer(text='Discord.py For Beginners', icon_url=logo)
 		await ctx.message.delete()
-		await ctx.send(embed=reply, delete_after=5)
+		msg = await ctx.send(embed=reply, delete_after=5)
+		await asyncio.sleep(5)
+		await msg.delete()
 
 	else:
 		webhook = DiscordWebhook(url='webhook url')
-		embed = DiscordEmbed(title='New Bot Request', description=f'Bot Requested by <@!{ctx.author.id}> \n\n**Reason:**\n{reason}\n\n:link: [Bot Invite](https://discord.com/oauth2/authorize?client_id={curl}&scope=bot&permissions=0)', color=0x2F3136)
+		embed = DiscordEmbed(title='New Bot Request', description=f'Bot Requested by <@!{ctx.author.id}> \n\n**Reason:**\n{reason}\n\n:link: [Bot Invite](https://discord.com/oauth2/authorize?client_id={url}&scope=bot&permissions=0)', color=0x2F3136)
 		embed.set_footer(text='Discord.py For Beginners', icon_url=logo)
 		webhook.add_embed(embed)
 		webhook.execute()
@@ -309,13 +318,15 @@ async def addbot(ctx, curl, *, reason):
 		reply = discord.Embed(title='Bot has been Requested', description='Your Bot has been requested, if this was a troll, or a prank, you will be punished.', color=0x2F3136)
 		reply.set_footer(text='Discord.py For Beginners', icon_url=logo)
 		await ctx.message.delete()
-		await ctx.send(embed=reply, delete_after=5)
+		msg = await ctx.send(embed=reply, delete_after=5)
+		await asyncio.sleep(5)
+		await msg.delete()
 
 #Bot Approve Command
 
-@bot.command()
+@slash.slash(name="approve", description="approves a bot request")
 @commands.has_permissions(administrator=True)
-async def approve(ctx, user: discord.Member, *, reason: commands.clean_content):
+async def approve(ctx: SlashContext, user: discord.Member, *, reason: commands.clean_content):
 	if reason is None:
 		webhook = DiscordWebhook(url='https://discord.com/api/webhooks/780400771975086090/1aG9XbOqyGwRnEdvYie3lvUYAWYyiGkhU_y29TABVHy9_tG5wZd73Fe5TLG1ozG_MlFM')
 		embed = DiscordEmbed(title='<:D:780326506366500864> Bot Request Approved', description=f'**Approved By:** {ctx.author.mention}({ctx.author.name}#{ctx.author.discriminator}) \n\n**Bot Owner:** {user.mention}({user.name}#{user.discriminator}) \n\n**Reason:**\n**NOT SPECIFIED**', color=0x2F3136)
@@ -333,9 +344,9 @@ async def approve(ctx, user: discord.Member, *, reason: commands.clean_content):
 
 # Bot Disapprove Command
 
-@bot.command()
+@slash.slash(name="disapprove", description="disapproves a bot request")
 @commands.has_permissions(administrator=True)
-async def disapprove(ctx, user: discord.Member, *, reason: commands.clean_content):
+async def disapprove(ctx: SlashContext, user: discord.Member, *, reason: commands.clean_content):
 	if reason is None:
 		webhook = DiscordWebhook(url='https://discord.com/api/webhooks/780400771975086090/1aG9XbOqyGwRnEdvYie3lvUYAWYyiGkhU_y29TABVHy9_tG5wZd73Fe5TLG1ozG_MlFM')
 		embed = DiscordEmbed(title='<:F:780326063120318465> Bot Request Disapproved', description=f'**Disapproved By:** {ctx.author.mention}({ctx.author.name}#{ctx.author.discriminator}) \n\n**Bot Owner:** {user.mention}({user.name}#{user.discriminator}) \n\n**Reason:**\n**NOT SPECIFIED**', color=0x2F3136)
@@ -353,188 +364,132 @@ async def disapprove(ctx, user: discord.Member, *, reason: commands.clean_conten
 
 # Help Group
 
-@bot.group()
-async def help(ctx):
-	if ctx.invoked_subcommand is None:
+@slash.slash(name="help", description="Shows all commands")
+async def help(ctx: SlashContext, command=None):
+	if command is None:
 		embed = discord.Embed(timestamp=ctx.message.created_at, title='Discord Python Official Bot', description='You can do `!help <command>` to get more info about the command.', color=0x2F3136)
 		embed.add_field(name='<:D:780326506366500864> Staff Commands', value='```approve, disapprove, modrep, modclose, check, shutdown```')
 		embed.add_field(name='<:C:780327572847853628> User Commands', value='```addbot, eval, ping, avatar, about, report, ticket, close```')
 		embed.set_footer(text='Discord.py For Beginners', icon_url=logo)
 		await ctx.send(embed=embed)
-
-# ModRep Help
-
-@help.command(name='modrep')
-async def help_modrep(ctx):
-	embed = discord.Embed(timestamp=ctx.message.created_at, color=0x2F3136)
-	embed.set_author(name='ModRep Command')
-	embed.add_field(name='Command Description:', value='This command is used to reply to the user on a modmail.', inline=False)
-	embed.add_field(name='Command Permissions:', value='`MANAGE_MESSAGES`', inline=False)
-	embed.add_field(name='Usage:', value='```py\n!modrep <@!userID> <messsage>```', inline=False)
-	embed.set_footer(text='Discord.py For Beginners', icon_url=logo)
-	await ctx.send(embed=embed)
-
-# Ping Help
-
-@help.command(name='ping')
-async def help_ping(ctx):
-	embed = discord.Embed(timestamp=ctx.message.created_at, color=0x2F3136)
-	embed.set_author(name='Ping Command')
-	embed.add_field(name='Command Description:', value="This command checks the bot's Webshock and Rest Ping.", inline=False)
-	embed.add_field(name='Command Permissions:', value='`@everyone`', inline=False)
-	embed.add_field(name='Usage:', value='```py\n!ping```', inline=False)
-	embed.set_footer(text='Discord.py For Beginners', icon_url=logo)
-	await ctx.send(embed=embed)
-
-# Report Help 
-
-@help.command(name='report')
-async def help_report(ctx):
-	embed = discord.Embed(timestamp=ctx.message.created_at, color=0x2F3136)
-	embed.set_author(name='Report Command')
-	embed.add_field(name='Command Description:', value='This command sends and alert to Discord.py Staff members with your report reason.', inline=False)
-	embed.add_field(name='Command Permissions:', value='`@everyone`', inline=False)
-	embed.add_field(name='Usage:', value='```py\n!report <@!userID> <reason>```', inline=False)
-	embed.set_footer(text='Discord.py For Beginners', icon_url=logo)
-	await ctx.send(embed=embed)
-
-# Eval Help
-
-@help.command(name='eval')
-async def help_eval(ctx):
-	embed = discord.Embed(timestamp=ctx.message.created_at, color=0x2F3136)
-	embed.set_author(name='Eval Command')
-	embed.add_field(name='Command Description:', value='This command gets the given code and executes and gives the results of the given code, this is a way of testing your code.', inline=False)
-	embed.add_field(name='Command Permissions:', value='`@everyone`', inline=False)
-	embed.add_field(name='Usage:', value="```py\n-eval \nprint('test')```", inline=False)
-	embed.set_footer(text='Discord.py For Beginners', icon_url=logo)
-	await ctx.send(embed=embed)
-
-# About Help
-
-@help.command(name='about')
-async def help_about(ctx):
-	embed = discord.Embed(timestamp=ctx.message.created_at, color=0x2F3136)
-	embed.set_author(name='About Command')
-	embed.add_field(name='Command Description:', value='This command gives you general information about the Server.', inline=False)
-	embed.add_field(name='Command Permissions:', value='`@everyone`', inline=False)
-	embed.add_field(name='Usage:', value="```py\n!about```", inline=False)
-	embed.set_footer(text='Discord.py For Beginners', icon_url=logo)
-	await ctx.send(embed=embed)
-
-# Check Help
-
-@help.command(name='check')
-async def help_check(ctx):
-	embed = discord.Embed(timestamp=ctx.message.created_at, color=0x2F3136)
-	embed.set_author(name='Check Command')
-	embed.add_field(name='Command Description:', value='This command gets the user info of a mentioned user.', inline=False)
-	embed.add_field(name='Command Permissions:', value='`MANAGE_MESSAGES`', inline=False)
-	embed.add_field(name='Usage:', value="```py\n!check <@!userID>```", inline=False)
-	embed.set_footer(text='Discord.py For Beginners', icon_url=logo)
-	await ctx.send(embed=embed)
-
-# Avatar Help
-
-@help.command(name='avatar')
-async def help_avatar(ctx):
-	embed = discord.Embed(timestamp=ctx.message.created_at, color=0x2F3136)
-	embed.set_author(name='Avatar Command')
-	embed.add_field(name='Command Description:', value='This command shows the avatar of a mentioned user.', inline=False)
-	embed.add_field(name='Command Permissions:', value='``', inline=False)
-	embed.add_field(name='Usage:', value="```py\n!avatar <@!userID>``` or ```py\n!avatar```", inline=False)
-	embed.set_footer(text='Discord.py For Beginners', icon_url=logo)
-	await ctx.send(embed=embed)
-
-# Shutdown Help
-
-@help.command(name='shutdown')
-async def help_shutdown(ctx):
-	embed = discord.Embed(timestamp=ctx.message.created_at, color=0x2F3136)
-	embed.set_author(name='Shutdown Command')
-	embed.add_field(name='Command Description:', value='This command Shuts Down the bot.', inline=False)
-	embed.add_field(name='Command Permissions:', value='`OWNER_ONLY`', inline=False)
-	embed.add_field(name='Usage:', value="```py\n!shutdown```", inline=False)
-	embed.set_footer(text='Discord.py For Beginners', icon_url=logo)
-	await ctx.send(embed=embed)
-
-# Add Bot Help
-
-@help.command(name='addbot')
-async def help_addbot(ctx):
-	embed = discord.Embed(timestamp=ctx.message.created_at, color=0x2F3136)
-	embed.set_author(name='Add Bot Command')
-	embed.add_field(name='Command Description:', value='This command sends a the bot request to the staff with a generated invite, for the staff members to review the bot.', inline=False)
-	embed.add_field(name='Command Permissions:', value='`@everyone`', inline=False)
-	embed.add_field(name='Usage:', value="```py\n!addbot <BotID> <reason>```", inline=False)
-	embed.set_footer(text='Discord.py For Beginners', icon_url=logo)
-	await ctx.send(embed=embed)
-
-# Approve Help
-
-@help.command(name='approve')
-async def help_approve(ctx):
-	embed = discord.Embed(timestamp=ctx.message.created_at, color=0x2F3136)
-	embed.set_author(name='Approve Command')
-	embed.add_field(name='Command Description:', value="This command Approves a user's requested bot and notifies the user that the bot has been approved.", inline=False)
-	embed.add_field(name='Command Permissions:', value='`ADMINISTRATOR`', inline=False)
-	embed.add_field(name='Usage:', value="```py\n!approve <@userID> <reason>```", inline=False)
-	embed.set_footer(text='Discord.py For Beginners', icon_url=logo)
-	await ctx.send(embed=embed)
-
-# Disapprove Help
-
-@help.command(name='disapprove')
-async def help_disapprove(ctx):
-	embed = discord.Embed(timestamp=ctx.message.created_at, color=0x2F3136)
-	embed.set_author(name='Disapprove Command')
-	embed.add_field(name='Command Description:', value="This command Disapproves a user's requested bot and notifies the user that the bot has been disapproved.", inline=False)
-	embed.add_field(name='Command Permissions:', value='`ADMINISTRATOR`', inline=False)
-	embed.add_field(name='Usage:', value="```py\n!disapprove <@userID> <reason>```", inline=False)
-	embed.set_footer(text='Discord.py For Beginners', icon_url=logo)
-	await ctx.send(embed=embed)
-
-# Ticket Help
-
-@help.command(name='ticket')
-async def help_ticket(ctx):
-	embed = discord.Embed(timestamp=ctx.message.created_at, color=0x2F3136)
-	embed.set_author(name='Ticket Command')
-	embed.add_field(name='Command Description:', value="This command will create a ticket with a provided reason.", inline=False)
-	embed.add_field(name='Command Permissions:', value='`@everyone`', inline=False)
-	embed.add_field(name='Usage:', value="```py\n!ticket <reason>```", inline=False)
-	embed.set_footer(text='Discord.py For Beginners', icon_url=logo)
-	await ctx.send(embed=embed)
-
-# Ticket Close Help
-
-@help.command(name='close')
-async def help_close(ctx):
-	embed = discord.Embed(timestamp=ctx.message.created_at, color=0x2F3136)
-	embed.set_author(name='Close Command')
-	embed.add_field(name='Command Description:', value="This command will Delete your ticket after you're done.", inline=False)
-	embed.add_field(name='Command Permissions:', value='`@everyone`', inline=False)
-	embed.add_field(name='Usage:', value="```py\n!close```", inline=False)
-	embed.set_footer(text='Discord.py For Beginners', icon_url=logo)
-	await ctx.send(embed=embed)
-
-# ModMail Close Help
-
-@help.command(name='modclose')
-async def help_modclose(ctx):
-	embed = discord.Embed(timestamp=ctx.message.created_at, color=0x2F3136)
-	embed.set_author(name='Mod Close Command')
-	embed.add_field(name='Command Description:', value="This command will End the ModMail support.", inline=False)
-	embed.add_field(name='Command Permissions:', value='`BAN_MEMBERS`', inline=False)
-	embed.add_field(name='Usage:', value="```py\n!modclose <@userID>```", inline=False)
-	embed.set_footer(text='Discord.py For Beginners', icon_url=logo)
-	await ctx.send(embed=embed)
+	elif command == "modrep":
+		embed = discord.Embed(timestamp=ctx.message.created_at, color=0x2F3136)
+		embed.set_author(name='ModRep Command')
+		embed.add_field(name='Command Description:', value='This command is used to reply to the user on a modmail.', inline=False)
+		embed.add_field(name='Command Permissions:', value='`MANAGE_MESSAGES`', inline=False)
+		embed.add_field(name='Usage:', value='```py\n!modrep <@!userID> <messsage>```', inline=False)
+		embed.set_footer(text='Discord.py For Beginners', icon_url=logo)
+		await ctx.send(embed=embed)
+	elif command == "ping":
+		embed = discord.Embed(timestamp=ctx.message.created_at, color=0x2F3136)
+		embed.set_author(name='Ping Command')
+		embed.add_field(name='Command Description:', value="This command checks the bot's Webshock and Rest Ping.", inline=False)
+		embed.add_field(name='Command Permissions:', value='`@everyone`', inline=False)
+		embed.add_field(name='Usage:', value='```py\n!ping```', inline=False)
+		embed.set_footer(text='Discord.py For Beginners', icon_url=logo)
+		await ctx.send(embed=embed)
+	elif command == "report":
+		embed = discord.Embed(timestamp=ctx.message.created_at, color=0x2F3136)
+		embed.set_author(name='Report Command')
+		embed.add_field(name='Command Description:', value='This command sends and alert to Discord.py Staff members with your report reason.', inline=False)
+		embed.add_field(name='Command Permissions:', value='`@everyone`', inline=False)
+		embed.add_field(name='Usage:', value='```py\n!report <@!userID> <reason>```', inline=False)
+		embed.set_footer(text='Discord.py For Beginners', icon_url=logo)
+		await ctx.send(embed=embed)
+	elif command == "eval":
+		embed = discord.Embed(timestamp=ctx.message.created_at, color=0x2F3136)
+		embed.set_author(name='Eval Command')
+		embed.add_field(name='Command Description:', value='This command gets the given code and executes and gives the results of the given code, this is a way of testing your code.', inline=False)
+		embed.add_field(name='Command Permissions:', value='`@everyone`', inline=False)
+		embed.add_field(name='Usage:', value="```py\n-eval \nprint('test')```", inline=False)
+		embed.set_footer(text='Discord.py For Beginners', icon_url=logo)
+		await ctx.send(embed=embed)
+	elif command == "about":
+		embed = discord.Embed(timestamp=ctx.message.created_at, color=0x2F3136)
+		embed.set_author(name='About Command')
+		embed.add_field(name='Command Description:', value='This command gives you general information about the Server.', inline=False)
+		embed.add_field(name='Command Permissions:', value='`@everyone`', inline=False)
+		embed.add_field(name='Usage:', value="```py\n!about```", inline=False)
+		embed.set_footer(text='Discord.py For Beginners', icon_url=logo)
+		await ctx.send(embed=embed)
+	elif command == "check":
+		embed = discord.Embed(timestamp=ctx.message.created_at, color=0x2F3136)
+		embed.set_author(name='Check Command')
+		embed.add_field(name='Command Description:', value='This command gets the user info of a mentioned user.', inline=False)
+		embed.add_field(name='Command Permissions:', value='`MANAGE_MESSAGES`', inline=False)
+		embed.add_field(name='Usage:', value="```py\n!check <@!userID>```", inline=False)
+		embed.set_footer(text='Discord.py For Beginners', icon_url=logo)
+		await ctx.send(embed=embed)
+	elif command == "avatar":
+		embed = discord.Embed(timestamp=ctx.message.created_at, color=0x2F3136)
+		embed.set_author(name='Avatar Command')
+		embed.add_field(name='Command Description:', value='This command shows the avatar of a mentioned user.', inline=False)
+		embed.add_field(name='Command Permissions:', value='``', inline=False)
+		embed.add_field(name='Usage:', value="```py\n!avatar <@!userID>``` or ```py\n!avatar```", inline=False)
+		embed.set_footer(text='Discord.py For Beginners', icon_url=logo)
+		await ctx.send(embed=embed)
+	elif command == "shutdown":
+		embed = discord.Embed(timestamp=ctx.message.created_at, color=0x2F3136)
+		embed.set_author(name='Shutdown Command')
+		embed.add_field(name='Command Description:', value='This command Shuts Down the bot.', inline=False)
+		embed.add_field(name='Command Permissions:', value='`OWNER_ONLY`', inline=False)
+		embed.add_field(name='Usage:', value="```py\n!shutdown```", inline=False)
+		embed.set_footer(text='Discord.py For Beginners', icon_url=logo)
+		await ctx.send(embed=embed)
+	elif command == "addbot":
+		embed = discord.Embed(timestamp=ctx.message.created_at, color=0x2F3136)
+		embed.set_author(name='Add Bot Command')
+		embed.add_field(name='Command Description:', value='This command sends a the bot request to the staff with a generated invite, for the staff members to review the bot.', inline=False)
+		embed.add_field(name='Command Permissions:', value='`@everyone`', inline=False)
+		embed.add_field(name='Usage:', value="```py\n!addbot <BotID> <reason>```", inline=False)
+		embed.set_footer(text='Discord.py For Beginners', icon_url=logo)
+		await ctx.send(embed=embed)
+	elif command == "approve":
+		embed = discord.Embed(timestamp=ctx.message.created_at, color=0x2F3136)
+		embed.set_author(name='Approve Command')
+		embed.add_field(name='Command Description:', value="This command Approves a user's requested bot and notifies the user that the bot has been approved.", inline=False)
+		embed.add_field(name='Command Permissions:', value='`ADMINISTRATOR`', inline=False)
+		embed.add_field(name='Usage:', value="```py\n!approve <@userID> <reason>```", inline=False)
+		embed.set_footer(text='Discord.py For Beginners', icon_url=logo)
+		await ctx.send(embed=embed)
+	elif command == "disapprove":
+		embed = discord.Embed(timestamp=ctx.message.created_at, color=0x2F3136)
+		embed.set_author(name='Disapprove Command')
+		embed.add_field(name='Command Description:', value="This command Disapproves a user's requested bot and notifies the user that the bot has been disapproved.", inline=False)
+		embed.add_field(name='Command Permissions:', value='`ADMINISTRATOR`', inline=False)
+		embed.add_field(name='Usage:', value="```py\n!disapprove <@userID> <reason>```", inline=False)
+		embed.set_footer(text='Discord.py For Beginners', icon_url=logo)
+		await ctx.send(embed=embed)
+	elif command == "ticket":
+		embed = discord.Embed(timestamp=ctx.message.created_at, color=0x2F3136)
+		embed.set_author(name='Ticket Command')
+		embed.add_field(name='Command Description:', value="This command will create a ticket with a provided reason.", inline=False)
+		embed.add_field(name='Command Permissions:', value='`@everyone`', inline=False)
+		embed.add_field(name='Usage:', value="```py\n!ticket <reason>```", inline=False)
+		embed.set_footer(text='Discord.py For Beginners', icon_url=logo)
+		await ctx.send(embed=embed)
+	elif command == "close":
+		embed = discord.Embed(timestamp=ctx.message.created_at, color=0x2F3136)
+		embed.set_author(name='Close Command')
+		embed.add_field(name='Command Description:', value="This command will Delete your ticket after you're done.", inline=False)
+		embed.add_field(name='Command Permissions:', value='`@everyone`', inline=False)
+		embed.add_field(name='Usage:', value="```py\n!close```", inline=False)
+		embed.set_footer(text='Discord.py For Beginners', icon_url=logo)
+		await ctx.send(embed=embed)
+	elif command == "modclose":
+		embed = discord.Embed(timestamp=ctx.message.created_at, color=0x2F3136)
+		embed.set_author(name='Mod Close Command')
+		embed.add_field(name='Command Description:', value="This command will End the ModMail support.", inline=False)
+		embed.add_field(name='Command Permissions:', value='`BAN_MEMBERS`', inline=False)
+		embed.add_field(name='Usage:', value="```py\n!modclose <@userID>```", inline=False)
+		embed.set_footer(text='Discord.py For Beginners', icon_url=logo)
+		await ctx.send(embed=embed)
 
 # Report Command
 
-@bot.command()
+@slash.slash(name="report", description="Report someone who broke a rule.")
 @commands.cooldown(1, 300, commands.BucketType.user)
-async def report(ctx, suspect: discord.Member, *, crime: commands.clean_content):
+async def report(ctx: SlashContext, suspect: discord.Member, *, crime: commands.clean_content):
 	if crime == None:
 		embed = discord.Embed(title='<:F:780326063120318465> No Report Sent', description="No reports have been sent because you didn't specify any reason for your Report.")
 	else:
@@ -557,8 +512,8 @@ async def report(ctx, suspect: discord.Member, *, crime: commands.clean_content)
 
 # Ticket Close
 
-@bot.command()
-async def close(ctx):
+@slash.slash(name="close", description="close your ticket")
+async def close(ctx: SlashContext):
 	if ctx.channel.category_id == 780420074719936534:
 		if ctx.channel.name == f'ticket-{ctx.author.discriminator}':
 			await ctx.send('<:S:790882958574616616> Closing Ticket in 5 seconds.')
@@ -576,8 +531,8 @@ async def close(ctx):
 
 # Ticket Command
 
-@bot.command()
-async def ticket(ctx, *, reason=None):
+@slash.slash(name="ticket", description="Open a ticket.")
+async def ticket(ctx: SlashContext, *, reason=None):
 	if ctx.channel.id == 780418954236788737:
 		if reason == None:
 			await ctx.send("<:F:780326063120318465> Your Ticket was not created becaue you didn't specify a reason.")
@@ -589,7 +544,7 @@ async def ticket(ctx, *, reason=None):
 			}
 			category = bot.get_channel(780420074719936534)
 			chnl = await guild.create_text_channel(name=f'ticket-{ctx.author.discriminator}', overwrites=overwrites, reason='New Ticket', category=category)
-			await chnl.set_permissions(ctx.author, send_messages=True, read_messages=True, add_reactions=True, embed_links=True, attach_files=True, read_message_history=True, external_emojis=True)
+			await chnl.set_permissions(ctx: SlashContext.author, send_messages=True, read_messages=True, add_reactions=True, embed_links=True, attach_files=True, read_message_history=True, external_emojis=True)
 			chan = discord.utils.get(guild.text_channels, name=f'ticket-{ctx.author.discriminator}')
 			embed = discord.Embed(title=f"{ctx.author.name}'s Ticket", description=f"This Ticket has been created in **Discord.py For Beginners** Server\n\n**Reason:**\n{reason}", color=0x2F3136)
 			embed.set_thumbnail(url=ctx.author.avatar_url)
@@ -601,10 +556,10 @@ async def ticket(ctx, *, reason=None):
 
 # About Command
 
-@bot.command()
+@slash.slash(name="about", description="Shows information about the server and the bot.")
 @commands.guild_only()
-async def about(ctx):
-	asd = get(ctx.guilds, id=780278916173791232)
+async def about(ctx: SlashContext):
+	asd = get(ctx: SlashContext.guilds, id=780278916173791232)
 	if ctx.guild.id == asd:
 		embed = discord.Embed(timestamp=ctx.message.created_at, title='About')
 
@@ -623,9 +578,9 @@ async def about(ctx):
 
 # Check Command
 
-@bot.command()
+@slash.slash(name="check", description="checks the user's info.")
 @commands.has_permissions(manage_messages=True)
-async def check(ctx, user: discord.Member = None):
+async def check(ctx: SlashContext, user: discord.Member = None):
 	if user is None:
 		user = ctx.message.author
 	if user.activity is not None:
@@ -652,8 +607,8 @@ async def check(ctx, user: discord.Member = None):
 
 # Ping Command
 
-@bot.command()
-async def ping(ctx):
+@slash.slash(name="ping", description="shows the bot's ping.")
+async def ping(ctx: SlashContext):
 	before = time.monotonic()
 	before_ws = int(round(bot.latency * 1000, 1))
 	message = await ctx.send("🏓 Pong", delete_after=0)
@@ -665,12 +620,12 @@ async def ping(ctx):
 
 # Shutdown Command
 
-@bot.command()
-async def shutdown(ctx):
+@slash.slash(name="shutdown", description="shuts down the bot offline.")
+async def shutdown(ctx: SlashContext):
 	access = [529499034495483926, 635838945862746113]
 	if ctx.author.id == access:
 		await ctx.send('<:S:790882958574616616> Bot is shutting down.')
-		await ctx.message.delete(ctx.message)
+		await ctx.message.delete(ctx: SlashContext.message)
 		await bot.change_presence(status=discord.Status.offline)
 		await bot.logout()
 	else:
@@ -678,9 +633,9 @@ async def shutdown(ctx):
 
 # Load Cog
 
-@bot.command()
+@slash.slash(name="load", description="Loads a cog")
 @commands.is_owner()
-async def load(ctx, *, name: str):
+async def load(ctx: SlashContext, *, name: str):
 	try:
 		bot.load_extension(f"cogs.{name}")
 	except Exception as e:
@@ -690,9 +645,9 @@ async def load(ctx, *, name: str):
 
 # Unload Cog
 
-@bot.command()
+@slash.slash(name="unload", description="unloads a cog")
 @commands.is_owner()
-async def unload(ctx, *, name: str):
+async def unload(ctx: SlashContext, *, name: str):
 	try:
 		bot.unload_extension(f"cogs.{name}")
 	except Exception as e:
@@ -702,9 +657,9 @@ async def unload(ctx, *, name: str):
 
 # Reload Cog
 
-@bot.command()
+@slash.slash(name="reload", description="reloads a cog")
 @commands.is_owner()
-async def reload(ctx, *, name: str):
+async def reload(ctx: SlashContext, *, name: str):
 	try:
 		bot.reload_extension(f"cogs.{name}")
 	except Exception as e:
