@@ -1,24 +1,10 @@
-import os
-import io
 import re
-import json
-import time
 import base64
 import asyncio
 import discord
-import inspect
-import aiohttp
-import datetime
-import textwrap
-import traceback
-import contextlib
 
-from random import choice
-from datetime import date
 from discord.utils import get
-from contextlib import redirect_stdout
-from discord.ext import commands, tasks
-from discord_webhook import DiscordWebhook, DiscordEmbed
+from discord.ext import commands
 from discord.ext.commands import has_permissions, MissingPermissions, errors
 
 TOKEN_REGEX = re.compile(r'[a-zA-Z0-9_-]{23,28}\.[a-zA-Z0-9_-]{6,7}\.[a-zA-Z0-9_-]{27}')
