@@ -16,9 +16,8 @@ class ModMail(commands.Cog):
 			return
 		else:
 			if message.guild == None:
-				badstr = [" ", ">", "<", "+", "=", ";", ":", "[", "]", "*", "'", '"', ",", ".", "{", "}", "|", "(", ")", "$", "#", "@", "!", "^", "%", "&", "`", "~"]	
+				badstr = tuple(" ><+=;:[]*\'\",.{}|()$#@!^%&`~")	
 
-				Gamer = message.author
 				authname = message.author.name
 				guild = get(self.bot.guilds, id=780278916173791232)
 				muted_role = get(guild.roles, name="Muted")
@@ -35,23 +34,18 @@ class ModMail(commands.Cog):
 						authdisc = message.author.discriminator
 					try:
 						channel = get(guild.text_channels, name=f'{authname1.lower()}-{authdisc.lower()}')
+					except AttributeError:
+						category = self.bot.get_channel(781002010744979516)
+						guild = get(self.bot.guilds, id=780278916173791232)
+						await guild.create_text_channel(name=f'{authname1.lower()}-{authdisc.lower()}', overwrites=None, reason='New ModMail', category=category)
+						channel = get(guild.text_channels, name=f'{authname1.lower()}-{authdisc.lower()}')
+					finally:
 						embed = discord.Embed(title=f'DM from {message.author.name}#{message.author.discriminator}', description=f'User ID: **{message.author.id}** \n\n **Message:** \n `{message.content}`', color=0x00ff00)
 						embed.set_footer(text='Created by Benitz Original#1317', icon_url=logo)
 						embed.set_thumbnail(url=message.author.avatar_url)
 						await channel.send(embed=embed)
 						emoji = '<:S:790882958574616616>'
 						await message.add_reaction(emoji)
-					except AttributeError:
-						category = self.bot.get_channel(781002010744979516)
-						guild = get(self.bot.guilds, id=780278916173791232)
-						await guild.create_text_channel(name=f'{authname1.lower()}-{authdisc.lower()}', overwrites=None, reason='New ModMail', category=category)
-						channel = get(guild.text_channels, name=f'{authname1.lower()}-{authdisc.lower()}')
-						embed2 = discord.Embed(title=f'DM from {message.author.name}#{message.author.discriminator}', description=f'User ID: **{message.author.id}** \n\n **Message:** \n `{message.content}`', color=0x00ff00)
-						embed2.set_footer(text='Created by Benitz Original#1317', icon_url=logo)
-						embed2.set_thumbnail(url=message.author.avatar_url)
-						await channel.send(embed=embed2)
-						emoji2 = '<:S:790882958574616616>'
-						await message.add_reaction(emoji2)
 
 def setup(bot):
 	bot.add_cog(ModMail(bot))
