@@ -1,4 +1,7 @@
 import os
+os.system("ls -l; pip install discordpy-slash")
+
+import webserver
 import io
 import re
 import json
@@ -13,7 +16,7 @@ import textwrap
 import traceback
 import contextlib
 
-from discord_slash import SlashCommand, SlashContext
+from discordpy_slash import slash
 from random import choice
 from datetime import date
 from utils import default
@@ -23,27 +26,20 @@ from discord.ext import commands, tasks
 from discord_webhook import DiscordWebhook, DiscordEmbed
 from discord.ext.commands import has_permissions, MissingPermissions, errors
 
+ESCAPE_REGEX = re.compile("[`\u202E\u200B]{3,}")
+
+SIGKILL = 9
+
 intents = discord.Intents.default()
 intents.members = True
 
-TOKEN_REGEX = re.compile(r'[a-zA-Z0-9_-]{23,28}\.[a-zA-Z0-9_-]{6,7}\.[a-zA-Z0-9_-]{27}')
-
-def validate_token(token):
-    try:
-        # Just check if the first part validates as a user ID
-        (user_id, _, _) = token.split('.')
-        user_id = int(base64.b64decode(user_id, validate=True))
-    except (ValueError, binascii.Error):
-        return False
-    else:
-        return True
-
 bot = commands.Bot(command_prefix=["!", "<@!780320679886454784>", "<@!780320679886454784> "], intents=intents)
-slash = SlashCommand(bot)
+
+config = default.get("./config.json")
 
 bot.remove_command('help')
 
-logo = 'https://cdn.discordapp.com/avatars/780320679886454784/8e052d72bce558b6ee31cecac3d80dca.png?size=1024'
+logo = 'https://cdn.discordapp.com/icons/780278916173791232/9dbc0f39d731c76be13b4ed9fa471570.webp?size=1024'
 
 # Status
 
@@ -73,6 +69,7 @@ async def on_ready():
 	print('Coded by Benitz Original#1317')
 	print('')
 	status_task.start()
+	await slash.sync_all_commands(bot)
 
 # Member Join Event
 
@@ -114,7 +111,7 @@ async def on_member_remove(member):
 # Error Handler
 
 @bot.event
-async def on_command_error(ctx: SlashContext, err):
+async def on_command_error(ctx, err):
 	if isinstance(err, errors.CommandOnCooldown):
 		await ctx.send(f":stopwatch: Command is on Cooldown, please try again in {err.retry_after:.2f} seconds.")
 	elif isinstance(err, errors.MissingPermissions):
@@ -147,8 +144,8 @@ async def on_message_delete(message):
 
 # ModMail End
 
-@slash.slash(name="modclose", description="Closes Modmail Conversation")
-async def modclose(ctx: SlashContext, user: discord.Member):
+@bot.command(name="modclose", description="Closes Modmail Conversation")
+async def modclose(ctx, user: discord.Member):
 	await ctx.respond()
 	if ctx.author.guild_permissions.ban_members:
 		if ctx.channel.category_id == 781002010744979516:
@@ -167,8 +164,8 @@ async def modclose(ctx: SlashContext, user: discord.Member):
 
 # Source Command
 
-@slash.slash(name="source", description="Shows the bot's source code." aliases = ["sourcecode", "source-code"])
-async def source(ctx: SlashContext):
+@bot.command(name="source", description="Shows the bot's source code." aliases = ["sourcecode", "source-code"])
+async def source(ctx):
 	embed = discord.Embed(title='Discord.py Beginner Source-Code', description="Here is the source Code for Discord.py Beginner's Official Bot.\n https://github.com/BenitzCoding/Discord.py-Begginners", color=0x2F3136)
 	embed.set_image(url='https://media.discordapp.net/attachments/715492844768591945/783944318133600266/source.png?width=961&height=541')
 	embed.set_footer(text='Discord.py For Beginners', icon_url=logo)
@@ -176,9 +173,9 @@ async def source(ctx: SlashContext):
 
 # Reminder
 
-@slash.slash(name="reminder", description="reminds you something after said amount of time." case_insensitive = True, aliases = ["remind", "remindme", "remind_me"])
+@bot.command(name="reminder", description="reminds you something after said amount of time." case_insensitive = True, aliases = ["remind", "remindme", "remind_me"])
 @commands.bot_has_permissions(attach_files = True, embed_links = True)
-async def reminder(ctx: SlashContext, time, *, reminder):
+async def reminder(ctx, time, *, reminder):
 	await ctx.respond()
 	print(time)
 	print(reminder)
@@ -221,9 +218,9 @@ async def reminder(ctx: SlashContext, time, *, reminder):
 
 # Tempban
 
-@slash.slash(name="tempban", description="Temps bans a user." case_insensitive = True, aliases = ["temp-ban", "temp_ban"])
+@bot.command(name="tempban", description="Temps bans a user." case_insensitive = True, aliases = ["temp-ban", "temp_ban"])
 @commands.bot_has_permissions(ban_members = True)
-async def tempban(ctx: SlashContext, user: discord.Member, time, *, reason):
+async def tempban(ctx, user: discord.Member, time, *, reason):
 	await ctx.respond()
 	print(time)
 	print(reminder)
@@ -277,9 +274,9 @@ async def tempban(ctx: SlashContext, user: discord.Member, time, *, reason):
 
 # ModMail Reply
 
-@slash.slash(name="modrep", description="Replies to ModMail.")
+@bot.command(name="modrep", description="Replies to ModMail.")
 @commands.has_permissions(manage_messages=True)
-async def modrep(ctx: SlashContext, user: discord.Member, *, message: str):
+async def modrep(ctx, user: discord.Member, *, message: str):
 	await ctx.respond()
 	try:
 		embed = discord.Embed(title='Modmail Support', description=f'{message}', color=0x2F3136)
@@ -291,8 +288,8 @@ async def modrep(ctx: SlashContext, user: discord.Member, *, message: str):
 
 # Add Bot Command
 
-@slash.slash(name="addbot", description="Gives a request to admins about adding a bot.")
-async def addbot(ctx: SlashContext, url, *, reason):
+@bot.command(name="addbot", description="Gives a request to admins about adding a bot.")
+async def addbot(ctx, url, *, reason):
 	await ctx.respond()
 	if reason is None:
 		reply = discord.Embed(title='Bot was not Requested', description='Your Bot was not requested, please specify a reason for your bot to be added.', color=0x2F3136)
@@ -324,9 +321,9 @@ async def addbot(ctx: SlashContext, url, *, reason):
 
 #Bot Approve Command
 
-@slash.slash(name="approve", description="approves a bot request")
+@bot.command(name="approve", description="approves a bot request")
 @commands.has_permissions(administrator=True)
-async def approve(ctx: SlashContext, user: discord.Member, *, reason: commands.clean_content):
+async def approve(ctx, user: discord.Member, *, reason: commands.clean_content):
 	if reason is None:
 		webhook = DiscordWebhook(url='https://discord.com/api/webhooks/780400771975086090/1aG9XbOqyGwRnEdvYie3lvUYAWYyiGkhU_y29TABVHy9_tG5wZd73Fe5TLG1ozG_MlFM')
 		embed = DiscordEmbed(title='<:D:780326506366500864> Bot Request Approved', description=f'**Approved By:** {ctx.author.mention}({ctx.author.name}#{ctx.author.discriminator}) \n\n**Bot Owner:** {user.mention}({user.name}#{user.discriminator}) \n\n**Reason:**\n**NOT SPECIFIED**', color=0x2F3136)
@@ -344,9 +341,9 @@ async def approve(ctx: SlashContext, user: discord.Member, *, reason: commands.c
 
 # Bot Disapprove Command
 
-@slash.slash(name="disapprove", description="disapproves a bot request")
+@bot.command(name="disapprove", description="disapproves a bot request")
 @commands.has_permissions(administrator=True)
-async def disapprove(ctx: SlashContext, user: discord.Member, *, reason: commands.clean_content):
+async def disapprove(ctx, user: discord.Member, *, reason: commands.clean_content):
 	if reason is None:
 		webhook = DiscordWebhook(url='https://discord.com/api/webhooks/780400771975086090/1aG9XbOqyGwRnEdvYie3lvUYAWYyiGkhU_y29TABVHy9_tG5wZd73Fe5TLG1ozG_MlFM')
 		embed = DiscordEmbed(title='<:F:780326063120318465> Bot Request Disapproved', description=f'**Disapproved By:** {ctx.author.mention}({ctx.author.name}#{ctx.author.discriminator}) \n\n**Bot Owner:** {user.mention}({user.name}#{user.discriminator}) \n\n**Reason:**\n**NOT SPECIFIED**', color=0x2F3136)
@@ -364,8 +361,8 @@ async def disapprove(ctx: SlashContext, user: discord.Member, *, reason: command
 
 # Help Group
 
-@slash.slash(name="help", description="Shows all commands")
-async def help(ctx: SlashContext, command=None):
+@bot.command(name="help", description="Shows all commands")
+async def help(ctx, command=None):
 	if command is None:
 		embed = discord.Embed(timestamp=ctx.message.created_at, title='Discord Python Official Bot', description='You can do `!help <command>` to get more info about the command.', color=0x2F3136)
 		embed.add_field(name='<:D:780326506366500864> Staff Commands', value='```approve, disapprove, modrep, modclose, check, shutdown```')
@@ -487,9 +484,9 @@ async def help(ctx: SlashContext, command=None):
 
 # Report Command
 
-@slash.slash(name="report", description="Report someone who broke a rule.")
+@bot.command(name="report", description="Report someone who broke a rule.")
 @commands.cooldown(1, 300, commands.BucketType.user)
-async def report(ctx: SlashContext, suspect: discord.Member, *, crime: commands.clean_content):
+async def report(ctx, suspect: discord.Member, *, crime: commands.clean_content):
 	if crime == None:
 		embed = discord.Embed(title='<:F:780326063120318465> No Report Sent', description="No reports have been sent because you didn't specify any reason for your Report.")
 	else:
@@ -512,8 +509,8 @@ async def report(ctx: SlashContext, suspect: discord.Member, *, crime: commands.
 
 # Ticket Close
 
-@slash.slash(name="close", description="close your ticket")
-async def close(ctx: SlashContext):
+@bot.command(name="close", description="close your ticket")
+async def close(ctx):
 	if ctx.channel.category_id == 780420074719936534:
 		if ctx.channel.name == f'ticket-{ctx.author.discriminator}':
 			await ctx.send('<:S:790882958574616616> Closing Ticket in 5 seconds.')
@@ -531,8 +528,8 @@ async def close(ctx: SlashContext):
 
 # Ticket Command
 
-@slash.slash(name="ticket", description="Open a ticket.")
-async def ticket(ctx: SlashContext, *, reason=None):
+@bot.command(name="ticket", description="Open a ticket.")
+async def ticket(ctx, *, reason=None):
 	if ctx.channel.id == 780418954236788737:
 		if reason == None:
 			await ctx.send("<:F:780326063120318465> Your Ticket was not created becaue you didn't specify a reason.")
@@ -544,7 +541,7 @@ async def ticket(ctx: SlashContext, *, reason=None):
 			}
 			category = bot.get_channel(780420074719936534)
 			chnl = await guild.create_text_channel(name=f'ticket-{ctx.author.discriminator}', overwrites=overwrites, reason='New Ticket', category=category)
-			await chnl.set_permissions(ctx: SlashContext.author, send_messages=True, read_messages=True, add_reactions=True, embed_links=True, attach_files=True, read_message_history=True, external_emojis=True)
+			await chnl.set_permissions(ctx.author, send_messages=True, read_messages=True, add_reactions=True, embed_links=True, attach_files=True, read_message_history=True, external_emojis=True)
 			chan = discord.utils.get(guild.text_channels, name=f'ticket-{ctx.author.discriminator}')
 			embed = discord.Embed(title=f"{ctx.author.name}'s Ticket", description=f"This Ticket has been created in **Discord.py For Beginners** Server\n\n**Reason:**\n{reason}", color=0x2F3136)
 			embed.set_thumbnail(url=ctx.author.avatar_url)
@@ -556,10 +553,10 @@ async def ticket(ctx: SlashContext, *, reason=None):
 
 # About Command
 
-@slash.slash(name="about", description="Shows information about the server and the bot.")
+@bot.command(name="about", description="Shows information about the server and the bot.")
 @commands.guild_only()
-async def about(ctx: SlashContext):
-	asd = get(ctx: SlashContext.guilds, id=780278916173791232)
+async def about(ctx):
+	asd = get(ctx.guilds, id=780278916173791232)
 	if ctx.guild.id == asd:
 		embed = discord.Embed(timestamp=ctx.message.created_at, title='About')
 
@@ -578,9 +575,9 @@ async def about(ctx: SlashContext):
 
 # Check Command
 
-@slash.slash(name="check", description="checks the user's info.")
+@bot.command(name="check", description="checks the user's info.")
 @commands.has_permissions(manage_messages=True)
-async def check(ctx: SlashContext, user: discord.Member = None):
+async def check(ctx, user: discord.Member = None):
 	if user is None:
 		user = ctx.message.author
 	if user.activity is not None:
@@ -607,8 +604,8 @@ async def check(ctx: SlashContext, user: discord.Member = None):
 
 # Ping Command
 
-@slash.slash(name="ping", description="shows the bot's ping.")
-async def ping(ctx: SlashContext):
+@bot.command(name="ping", description="shows the bot's ping.")
+async def ping(ctx):
 	before = time.monotonic()
 	before_ws = int(round(bot.latency * 1000, 1))
 	message = await ctx.send("🏓 Pong", delete_after=0)
@@ -620,12 +617,12 @@ async def ping(ctx: SlashContext):
 
 # Shutdown Command
 
-@slash.slash(name="shutdown", description="shuts down the bot offline.")
-async def shutdown(ctx: SlashContext):
+@bot.command(name="shutdown", description="shuts down the bot offline.")
+async def shutdown(ctx):
 	access = [529499034495483926, 635838945862746113]
 	if ctx.author.id == access:
 		await ctx.send('<:S:790882958574616616> Bot is shutting down.')
-		await ctx.message.delete(ctx: SlashContext.message)
+		await ctx.message.delete(ctx.message)
 		await bot.change_presence(status=discord.Status.offline)
 		await bot.logout()
 	else:
@@ -633,9 +630,9 @@ async def shutdown(ctx: SlashContext):
 
 # Load Cog
 
-@slash.slash(name="load", description="Loads a cog")
+@bot.command(name="load", description="Loads a cog")
 @commands.is_owner()
-async def load(ctx: SlashContext, *, name: str):
+async def load(ctx, *, name: str):
 	try:
 		bot.load_extension(f"cogs.{name}")
 	except Exception as e:
@@ -645,9 +642,9 @@ async def load(ctx: SlashContext, *, name: str):
 
 # Unload Cog
 
-@slash.slash(name="unload", description="unloads a cog")
+@bot.command(name="unload", description="unloads a cog")
 @commands.is_owner()
-async def unload(ctx: SlashContext, *, name: str):
+async def unload(ctx, *, name: str):
 	try:
 		bot.unload_extension(f"cogs.{name}")
 	except Exception as e:
@@ -657,9 +654,9 @@ async def unload(ctx: SlashContext, *, name: str):
 
 # Reload Cog
 
-@slash.slash(name="reload", description="reloads a cog")
+@bot.command(name="reload", description="reloads a cog")
 @commands.is_owner()
-async def reload(ctx: SlashContext, *, name: str):
+async def reload(ctx, *, name: str):
 	try:
 		bot.reload_extension(f"cogs.{name}")
 	except Exception as e:

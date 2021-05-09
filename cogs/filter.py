@@ -33,7 +33,7 @@ def validate_token(token):
     else:
         return True
 
-logo = 'https://cdn.discordapp.com/avatars/780320679886454784/8e052d72bce558b6ee31cecac3d80dca.png?size=1024'
+logo = 'https://cdn.discordapp.com/icons/780278916173791232/9dbc0f39d731c76be13b4ed9fa471570.webp?size=1024'
 
 class Filter(commands.Cog):
 	def __init__(self, bot):
