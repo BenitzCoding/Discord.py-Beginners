@@ -166,7 +166,7 @@ async def modclose(ctx, user: discord.Member):
 
 @bot.command(name="source", description="Shows the bot's source code." aliases = ["sourcecode", "source-code"])
 async def source(ctx):
-	embed = discord.Embed(title='Discord.py Beginner Source-Code', description="Here is the source Code for Discord.py Beginner's Official Bot.\n https://github.com/BenitzCoding/Discord.py-Begginners", color=0x2F3136)
+	embed = discord.Embed(title='Discord.py Beginner Source-Code', description="Here is the source Code for Discord.py Beginner's Official Bot.\n https://github.com/BenitzCoding/Discord.py-Beginners", color=0x2F3136)
 	embed.set_image(url='https://media.discordapp.net/attachments/715492844768591945/783944318133600266/source.png?width=961&height=541')
 	embed.set_footer(text='Discord.py For Beginners', icon_url=logo)
 	await ctx.send(embed=embed)
