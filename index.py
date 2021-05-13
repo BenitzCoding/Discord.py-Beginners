@@ -164,7 +164,7 @@ async def modclose(ctx, user: discord.Member):
 
 # Source Command
 
-@bot.command(name="source", description="Shows the bot's source code." aliases = ["sourcecode", "source-code"])
+@bot.command(name="source", description="Shows the bot's source code.", aliases = ["sourcecode", "source-code"])
 async def source(ctx):
 	embed = discord.Embed(title='Discord.py Beginner Source-Code', description="Here is the source Code for Discord.py Beginner's Official Bot.\n https://github.com/BenitzCoding/Discord.py-Beginners", color=0x2F3136)
 	embed.set_image(url='https://media.discordapp.net/attachments/715492844768591945/783944318133600266/source.png?width=961&height=541')
@@ -173,7 +173,7 @@ async def source(ctx):
 
 # Reminder
 
-@bot.command(name="reminder", description="reminds you something after said amount of time." case_insensitive = True, aliases = ["remind", "remindme", "remind_me"])
+@bot.command(name="reminder", description="reminds you something after said amount of time.", case_insensitive = True, aliases = ["remind", "remindme", "remind_me"])
 @commands.bot_has_permissions(attach_files = True, embed_links = True)
 async def reminder(ctx, time, *, reminder):
 	await ctx.respond()
@@ -218,7 +218,7 @@ async def reminder(ctx, time, *, reminder):
 
 # Tempban
 
-@bot.command(name="tempban", description="Temps bans a user." case_insensitive = True, aliases = ["temp-ban", "temp_ban"])
+@bot.command(name="tempban", description="Temps bans a user.", case_insensitive = True, aliases = ["temp-ban", "temp_ban"])
 @commands.bot_has_permissions(ban_members = True)
 async def tempban(ctx, user: discord.Member, time, *, reason):
 	await ctx.respond()
