@@ -77,20 +77,20 @@ async def on_ready():
 async def on_member_join(member):
 	if member.bot:
 		webhook = DiscordWebhook(url='https://discord.com/api/webhooks/780400771975086090/1aG9XbOqyGwRnEdvYie3lvUYAWYyiGkhU_y29TABVHy9_tG5wZd73Fe5TLG1ozG_MlFM')
-		embed = DiscordEmbed(title='<:a:780407857093935124> Bot Added', description=f'**Bot Name:**\n{member.name} \n\n**Bot ID:**\n{member.id} \n\n**Bot Invite:**\nhttps://discord.com/oauth2/authorize?client_id={member.id}&scope=bot&permissions=0', color=0x2F3136)
+		embed = DiscordEmbed(title='<:a:780407857093935124> Bot Added', description=f'**Bot Name:**\n{member.name} \n\n**Bot ID:**\n{member.id} \n\n**Bot Invite:**\nhttps://discord.com/oauth2/authorize?client_id={member.id}&scope=bot&permissions=0', color=0x33cf25)
 		embed.set_footer(text='Discord.py For Beginners', icon_url=logo)
 		webhook.add_embed(embed)
 		webhook.execute()
 	else:
 		responces = [f'{member.name} Has Joined!', f'Welcome {member.name}!', f'{member.name} joined **Discord.py For Beginner**!', f'{member.name} Joined', f'{member.name} Welcome!']
 		webhook = DiscordWebhook(url='https://discord.com/api/webhooks/780322258824200203/UGR3Yi6727QrvzAbBbr-UOy5T-tSeOvpTYcdEJR2lktSnrFK79LLbrw4d7MKjtBaA2e-')
-		embed = DiscordEmbed(title=f'{choice(responces)}', description=f'Hey <@{member.id}> Welcome to **Discord.py For Beginners**! \n\n Make sure you read <#780281370508394516> and you know the rules and all. \n Happy Coding!', color=0x2F3136)
+		embed = DiscordEmbed(title=f'{choice(responces)}', description=f'Hey <@{member.id}> Welcome to **Discord.py For Beginners**! \n\n Make sure you read <#780281370508394516> and you know the rules and all that good stuff!\n So you want help with your code? No worries! Simply head over to <#780278916173791235> to get help with code related to the discord.py library, or head on over to <#845963584106266654> for general Python help! \n Happy Coding and we hope you enjoy your stay!', color=0x33cf25)
 		embed.set_thumbnail(url=f'{member.avatar_url}')
 		embed.set_footer(text=f'New Discord.py Developer', icon_url=f'{logo}')
 		webhook.add_embed(embed)
 		webhook.execute()
 
-		fm = discord.Embed(description="This is a Discord.py server for Beginners. You may ask for support and help others, If are not a Beginner and you know a lot of Discord.py, you can get the helper rank.\n You can ask a staff member to recieve the @help-me role, anyone can ping this role if they need help regaurding Discord.py, or any help in general.\n\n Make sure you read and fully understand this channel <#780281370508394516>. You might not know why you were punished If you don't read or understand <#780281370508394516> \n\n If you get kicked or you leave the server here is a link to join back! \n :link: https://discord.gg/C8zFM3D2rn", color=0x2F3136)
+		fm = discord.Embed(description="This is a server for Discord.py Beginners. You may ask for support and help others, If are not a Beginner and you know a lot of Discord.py, you can get the helper rank! (There is mo process for getting the helper rank, you'll be given it manually if staff see you are decent and actively helping others)\n You can ask a staff member to receive the @help-me role, anyone can ping this role if they need help regarding Discord.py, or any help in general.\n\n Make sure you read and fully understand this channel <#780281370508394516>. You might not know why you were punished If you don't read or understand <#780281370508394516> \n\n If you get kicked or you leave the server [here is a link to join back](https://discord.gg/C8zFM3D2rn)!", color=0x2288c7)
 		fm.set_author(name="Discord.py For Beginners", icon_url=f"{logo}")
 		fm.set_footer(text='Discord.py Official Bot', icon_url=logo)
 		await member.send(embed=fm)
