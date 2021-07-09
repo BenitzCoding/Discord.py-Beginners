@@ -1,3 +1,5 @@
+[![python](https://forthebadge.com/images/badges/made-with-python.svg)](https://python.org) [![tos](https://forthebadge.com/images/badges/ages-12.svg)](https://discord.com/terms)<br/>
+[![source](https://forthebadge.com/images/badges/open-source.svg)](https://github.com/BenitzCoding/Discord.py-Beginners) [![docs](https://forthebadge.com/images/badges/for-robots.svg)](https://discord.dev)
 # Description
 
 To get the bot successfully working, make sure you install all the packages from `requirements.txt`.
